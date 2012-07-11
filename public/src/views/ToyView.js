@@ -32,7 +32,9 @@ define(function (require) {
 
       // Init WebGL
 
-      toy.set("context", getWebGLContext(this.el));
+      var gl = getWebGLContext(this.el);
+      // gl = Embr.wrapContextWithErrorChecks(gl);
+      toy.set("context", gl);
 
 
       // Init Subviews
@@ -44,6 +46,12 @@ define(function (require) {
       // Assign event listeners
 
       toy.editor.on("change:define_pixel_scale", this.layout, this);
+
+      toy.audio
+        .on("change:queued_sound", function (audio, sound) {
+          // TODO: Present some UI here.
+          audio.playQueued();
+        });
 
 
       // Init Mouse
@@ -78,6 +86,8 @@ define(function (require) {
 
     start: function () {
       var self = this;
+      this.start_time = Date.now();
+      this.frame_num = 0;
       (function renderLoop () {
         utils.requestAnimationFrame(renderLoop);
         self.render();
@@ -87,24 +97,93 @@ define(function (require) {
     render: function () {
       var gl = Embr.gl
         , toy = this.model
-        , time = (Date.now() - this.start_time) / 1000;
+        , time = (Date.now() - this.start_time) / 1000
+        , res = toy.get("fbo_res");
+
+
+      gl.viewport(0, 0, res, res);
+      gl.disable(gl.DEPTH_TEST);
+
+
+      // Copy previous step
+
+      toy.fbo_prev_write.bind();
+
+        toy.fbo_read.textures[0].bind(0); // Position
+        toy.vbo_plane
+          .setProg(toy.prog_copy.use({ u_position: 0 }))
+          .draw();
+
+        toy.fbo_write.textures[0].unbind();
+
+      toy.fbo_prev_write.unbind();
+
+
+      // Render particle step pass
+
+      toy.fbo_write.bind();
+
+        toy.fbo_read.textures[0].bind(0);      // Position
+        toy.fbo_prev_read.textures[0].bind(1); // Previous position
+        toy.tex_index.bind(2);
+        toy.tex_eq_left.bind(3);
+        toy.tex_eq_right.bind(4);
+
+        toy.editor.program.use({
+          position:      0,
+          position_prev: 1,
+          index:         2,
+          amp_left:      3,
+          amp_right:     4,
+          aspect:        this.aspect,
+          resolution:    this.resolution,
+          mouse:         this.mouse_pos,
+          time:          time,
+          frame:         this.frame_num,
+          progress:      toy.audio.get("progress")
+        });
+
+        toy.vbo_plane
+          .setProg(toy.editor.program)
+          .draw();
+
+        toy.fbo_read.textures[0].unbind();
+        toy.fbo_prev_read.textures[0].unbind();
+        toy.tex_index.unbind();
+        toy.tex_eq_left.unbind();
+        toy.tex_eq_right.unbind();
+
+      toy.fbo_write.unbind();
+      toy.swap();
+
+
+      // Render view pass
 
       gl.viewport(0, 0, this.el.width, this.el.height);
+      gl.enable(gl.DEPTH_TEST);
+      gl.clearColor(0, 0, 0, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT);
 
-      toy.eq_texture_left.bind(0);
-      toy.eq_texture_right.bind(1);
+      var projection = mat4.perspective(60, this.aspect, 0.01, 100.0)
+        , modelview = mat4.lookAt([ 0, 0, 5 ], [ 0, 0, 0 ], [ 0, 1, 0 ])
+        , mvp = mat4.multiply(projection, modelview, mat4.create());
 
-      toy.editor.program.use({
-        amp_left:   0,
-        amp_right:  1,
-        aspect:     this.aspect,
-        resolution: this.resolution,
-        mouse:      this.mouse_pos,
-        time:       toy.audio.get("time"),
-        progress:   toy.audio.get("progress")
+      toy.fbo_read.textures[0].bind(0); // Position
+
+      toy.prog_final.use({
+        u_mvp: mvp,
+        u_position: 0,
+        u_color: 1
       });
 
-      toy.plane.draw();
+      toy.vbo_particles.draw();
+
+      toy.fbo_read.textures[0].unbind();
+
+
+      // Increment frame number
+
+      this.frame_num++;
     }
 
   });

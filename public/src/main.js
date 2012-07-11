@@ -24,6 +24,7 @@ requirejs.config({
   paths: {
     "text":         "lib/text",
     "embr":         "lib/embr/src/embr",
+    "glmatrix":     "lib/gl-matrix",
     "backbone":     "lib/backbone",
     "underscore":   "lib/underscore",
     "zepto":        "lib/zepto",
@@ -31,6 +32,6 @@ requirejs.config({
     "soundcloud":   "http://connect.soundcloud.com/sdk"
   }
 });
-require([ "src/models/Toy", "src/views/ToyView" ], function (Toy, ToyView) {
+require([ "src/models/Toy", "src/views/ToyView", "glmatrix" ], function (Toy, ToyView) {
   window.toyview = new ToyView({ model: window.toy = new Toy() });
 });
