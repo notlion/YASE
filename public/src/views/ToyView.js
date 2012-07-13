@@ -77,7 +77,7 @@ define(function (require) {
     },
 
     layout: function () {
-      var sc = this.model.editor.get("define_pixel_scale") || 1;
+      var sc = +this.model.editor.get("define_pixel_scale") || 1;
       var w = this.el.width = this.el.clientWidth / sc;
       var h = this.el.height = this.el.clientHeight / sc;
       this.resolution = new Float32Array([ w, h ]);
@@ -174,7 +174,8 @@ define(function (require) {
       toy.prog_final.use({
         u_mvp: mvp,
         u_position: 0,
-        u_color: 1
+        u_color: 1,
+        u_point_size: +this.model.editor.get("define_point_size") || 2
       });
 
       toy.vbo_particles.draw();
