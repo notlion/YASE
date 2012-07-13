@@ -103,6 +103,7 @@ define(function (require) {
 
       gl.viewport(0, 0, res, res);
       gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.BLEND);
 
 
       // Copy previous step
