@@ -157,9 +157,9 @@ define(function (require) {
       // Render view pass
 
       gl.viewport(0, 0, this.el.width, this.el.height);
-      gl.enable(gl.DEPTH_TEST);
       gl.clearColor(0, 0, 0, 1);
-      gl.clear(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      gl.enable(gl.DEPTH_TEST);
 
       var projection = mat4.perspective(60, this.aspect, 0.01, 100.0)
         , modelview = this.arcball.getModelView()
