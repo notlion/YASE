@@ -10,8 +10,8 @@ define(function (require) {
 
 
   var init_template = [
-    '<div class="code-container" style="visibility:hidden;opacity:0">',
-      '<textarea class="code" spellcheck="false"></textarea>',
+    '<div class="code-container" style="opacity:0">',
+      '<textarea class="code" cols="80" spellcheck="false"></textarea>',
     '</div>',
     '<div class="ui"></div>'
   ].join("");
@@ -54,10 +54,10 @@ define(function (require) {
             opacity: open ? 1 : 0
           }, d, e, function(){
             if(!open)
-              container.css(vis, "hidden");
+              container.hide();
           });
           if(open)
-            container.css(vis, "visible");
+            container.show();
         });
 
       this.render();
