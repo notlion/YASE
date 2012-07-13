@@ -22,6 +22,16 @@ define(function () {
     requestAnimFrameFn.call(window, callback); // Call in window scope
   };
 
+  utils.getWebGLContext = function (canvas) {
+    try {
+       return canvas.getContext("webgl") ||
+              canvas.getContext("experimental-webgl");
+    }
+    catch(err) {
+      console.error(err);
+    }
+  };
+
   return utils;
 
 });

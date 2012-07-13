@@ -6,20 +6,11 @@ define(function (require) {
     , _        = require("underscore")
     , Embr     = require("embr")
 
-    , utils = require("src/utils")
+    , utils   = require("src/utils")
+    , Arcball = require("src/Arcball")
 
     , ProgEditorView = require("src/views/ProgEditorView");
 
-
-  function getWebGLContext (canvas) {
-    try {
-       return canvas.getContext("webgl") ||
-              canvas.getContext("experimental-webgl");
-    }
-    catch(err) {
-      console.error(err);
-    }
-  }
 
   var ToyView = Backbone.View.extend({
 
@@ -32,7 +23,7 @@ define(function (require) {
 
       // Init WebGL
 
-      var gl = getWebGLContext(this.el);
+      var gl = utils.getWebGLContext(this.el);
       // gl = Embr.wrapContextWithErrorChecks(gl);
       toy.set("context", gl);
 
@@ -52,6 +43,11 @@ define(function (require) {
           // TODO: Present some UI here.
           audio.playQueued();
         });
+
+
+      // Init Arcball
+
+      this.arcball = new Arcball(this.el);
 
 
       // Init Mouse
@@ -166,7 +162,7 @@ define(function (require) {
       gl.clear(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT);
 
       var projection = mat4.perspective(60, this.aspect, 0.01, 100.0)
-        , modelview = mat4.lookAt([ 0, 0, 5 ], [ 0, 0, 0 ], [ 0, 1, 0 ])
+        , modelview = this.arcball.getModelView()
         , mvp = mat4.multiply(projection, modelview, mat4.create());
 
       toy.fbo_read.textures[0].bind(0); // Position
