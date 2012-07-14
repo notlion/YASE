@@ -15,6 +15,12 @@ requirejs.config({
     "zepto": {
       exports: "Zepto"
     },
+    "codemirror": {
+      exports: "CodeMirror"
+    },
+    "codemirror-glsl": {
+      deps: [ "codemirror" ]
+    },
     "soundcloud": {
       deps: [ "soundmanager" ],
       exports: "SC"
@@ -22,14 +28,16 @@ requirejs.config({
   },
   baseUrl: "../",
   paths: {
-    "text":         "lib/text",
-    "embr":         "lib/embr/src/embr",
-    "glmatrix":     "lib/gl-matrix",
-    "backbone":     "lib/backbone",
-    "underscore":   "lib/underscore",
-    "zepto":        "lib/zepto",
-    "soundmanager": "lib/soundmanager/soundmanager2-nodebug",
-    "soundcloud":   "http://connect.soundcloud.com/sdk"
+    "text":            "lib/text",
+    "embr":            "lib/embr/src/embr",
+    "glmatrix":        "lib/gl-matrix",
+    "backbone":        "lib/backbone",
+    "underscore":      "lib/underscore",
+    "zepto":           "lib/zepto",
+    "codemirror":      "lib/codemirror/codemirror",
+    "codemirror-glsl": "lib/codemirror/glsl",
+    "soundmanager":    "lib/soundmanager/soundmanager2-nodebug",
+    "soundcloud":      "http://connect.soundcloud.com/sdk"
   }
 });
 require([ "src/models/Toy", "src/views/ToyView", "glmatrix" ], function (Toy, ToyView) {

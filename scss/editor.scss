@@ -1,18 +1,9 @@
 @import "bourbon/bourbon";
 
+@import "codemirror.scss";
+
 #prog-editor {
   & .code-container {
-    position: absolute;
-    left: 30px; top: 30px; bottom: 30px;
-    padding: 20px 10px 10px 10px;
-    border-radius: 5px;
-
-    &:hover {
-      @include transition-duration(0.1s);
-      @include transition-timing-function(ease-out);
-      @include box-shadow(inset rgba(0, 0, 0, 0.5) 0px 0px 6px);
-      background-color: rgba(24, 28, 22, 0.8);
-    }
   }
 
   & .ui {
@@ -27,18 +18,31 @@
     }
   }
 
-  & textarea {
-    margin: 0;
-    border: 0;
-    outline: none;
-    resize: none;
-    height: 100%;
-    color: white; background-color: transparent;
+  & .CodeMirror {
+    position: absolute;
+    left: 30px; right: 50%; top: 30px; bottom: 30px;
+    border-radius: 5px;
+
+    &:hover {
+      @include transition-duration(0.1s);
+      @include transition-timing-function(ease-out);
+      @include box-shadow(inset rgba(0, 0, 0, 0.5) 0px 0px 6px);
+      background-color: rgba(24, 28, 22, 0.8);
+    }
+
+    padding: 20px 10px 10px 10px;
+    color: white;
     font-family: Monospace;
     font-size: 14px;
     font-weight: bold;
-    white-space: pre-wrap;
+    line-height: 1.1em;
     text-shadow: #000 0px 1px 3px;
+  }
+  & .CodeMirror-scroller {
+    height: 100%;
+  }
+  & .CodeMirror-cursor {
+    border-left: 1px solid #fff;
   }
 
   &.error {
