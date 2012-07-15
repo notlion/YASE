@@ -25,9 +25,7 @@ define(function (require) {
     id: "prog-editor",
 
     events: {
-      "click .toggle-open": "toggleOpen",
-      "keydown .code":      "keyDown",
-      "keyup .code":        "keyUp"
+      "click .toggle-open": "toggleOpen"
     },
 
     initialize: function () {
@@ -36,16 +34,15 @@ define(function (require) {
       if(!this.model)
         this.model = new ProgEditor();
 
+      this.cm_error_marks = [];
+
       this.model
-        // .on("change:src_fragment", this.updateCode, this)
         .on("change:compiled", function (model, compiled) {
           if(compiled)
-            self.$el.removeClass("error");
-          else
-            self.$el.addClass("error");
+            self.clearErrorMarks();
         })
-        .on("change:error", function (model, error) {
-          console.error(error);
+        .on("change:errors", function (model, errors) {
+          self.markErrors(errors);
         })
         .on("change:open", function (model, open) {
           var d = 200, e = "ease", vis = "visibility"
@@ -68,35 +65,6 @@ define(function (require) {
       this.render();
     },
 
-    keyDown: function (e) {
-      e.stopPropagation();
-
-      if(e.keyCode == 9) { // Tab
-        e.preventDefault();
-
-        var ta    = e.target
-          , start = ta.selectionStart
-          , end   = ta.selectionEnd;
-
-        ta.value = ta.value.substring(0, start) + "  " +
-                   ta.value.substring(end, ta.value.length);
-
-        ta.selectionStart = ta.selectionEnd = start + 2;
-
-        ta.focus();
-      }
-    },
-
-    keyUp: function (e) {
-      e.stopPropagation();
-
-      if((e.keyCode >= 16 && e.keyCode <= 45) ||
-         (e.keyCode >= 91 && e.keyCode <= 93))
-        return;
-
-      this.model.set("src_fragment", e.target.value);
-    },
-
     toggleOpen: function () {
       this.setOpen(!this.model.get("open"));
     },
@@ -114,6 +82,23 @@ define(function (require) {
       return this;
     },
 
+    markErrors: function (errors) {
+      this.clearErrorMarks();
+      _.each(errors, function (err) {
+        this.cm_error_marks.push(this.cm_code.markText(
+          { line: err.line, ch: 0 },
+          { line: err.line },
+          "error"
+        ));
+      }, this);
+    },
+
+    clearErrorMarks: function () {
+      var mark;
+      while(mark = this.cm_error_marks.pop())
+        mark.clear();
+    },
+
     render: function () {
       this.$el.html(_.template(init_template));
 
@@ -127,6 +112,7 @@ define(function (require) {
         tabSize: 2,
         autoClearEmptyLines: true,
         lineWrapping: true,
+        matchBrackets: true,
         onCursorActivity: function () { self.cm_code.refresh(); },
         onChange: function () {
           self.model.set("src_fragment", self.cm_code.getValue());

@@ -9,7 +9,10 @@ define(function (require) {
     , ProgEditorButton = require("./ProgEditorButton");
 
 
-  var shader_outlet_re = /^[ \t]*#define[ \t]+([\w_]*)[ \t]+(\S+)/gm;
+  var shader_outlet_re = /^[ \t]*#define[ \t]+([\w_]*)[ \t]+(\S+)/gm
+    , shader_error_re = /^ERROR: (\d+):(\d+): '([^']+)' : ([\w ]+)/gm
+    , template_include_re = /<%=\s*src_fragment\s*%>/;
+
 
   function extractShaderDefines (src) {
     var match, i, defines = {};
@@ -20,13 +23,38 @@ define(function (require) {
     return defines;
   }
 
+  function parseShaderErrors (err) {
+    var match, errstr = err.toString(), errs = [];
+    while(match = shader_error_re.exec(errstr)) {
+      errs.push({
+        line: +match[2],
+        token: match[3],
+        error: match[4]
+      });
+    }
+    return errs;
+  }
+
+  function findRowColForStringIndex (str, index) {
+    var d = { row: 0, col: 0 }, lines;
+    if(index >= 0) {
+      lines = str.slice(0, index).split(/[\r\n]/g);
+      d.row = lines.length;
+      d.col = lines[lines.length - 1].length;
+    }
+    return d;
+  }
+
+
   var ProgEditor = Backbone.Model.extend({
 
     defaults: {
       open: false,
       src_vertex: "",
       src_fragment: "",
-      src_fragment_template: ""
+      src_fragment_template: "",
+      src_fragment_row: 0,
+      src_fragment_col: 0
     },
 
     initialize: function () {
@@ -37,8 +65,24 @@ define(function (require) {
           icon: '<path d="M -7,0 L 7,0 M 0,-7 L 0,7"/>'
         },
       ]);
+
       this.program = new Embr.Program();
-      this.on("change:src_vertex change:src_fragment", this.compile, this);
+
+      this
+        .on("change:src_vertex change:src_fragment", this.compile, this)
+        .on("change:src_fragment_template", this.updateTemplateData, this);
+
+      this.updateTemplateData();
+    },
+
+    updateTemplateData: function () {
+      var tmpl = this.get("src_fragment_template")
+        , index = tmpl.search(template_include_re)
+        , d = findRowColForStringIndex(tmpl, index);
+      this.set({
+        src_fragment_row: d.row,
+        src_fragment_col: d.col
+      });
     },
 
     compile: _.debounce(function () {
@@ -64,8 +108,15 @@ define(function (require) {
           this.program.link();
         }
         catch(err) {
-          this.set("error", err.toString());
+          var i, row = this.get("src_fragment_row")
+            , errs = parseShaderErrors(err);
+
+          for(i = 0; i < errs.length; ++i)
+            errs[i].line -= row;
+
+          this.set("errors", errs);
           this.set("compiled", false);
+
           return;
         }
 

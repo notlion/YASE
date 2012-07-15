@@ -132,7 +132,7 @@ div.CodeMirror-selected {
 
 /* Default theme */
 .cm-s-default span.cm-keyword {
-  color: #888; }
+  color: #998; }
 
 .cm-s-default span.cm-atom {
   color: #fff; }
@@ -156,10 +156,10 @@ div.CodeMirror-selected {
   color: #fff; }
 
 .cm-s-default span.cm-operator {
-  color: #888; }
+  color: #9cc; }
 
 .cm-s-default span.cm-comment {
-  color: #444; }
+  color: #665; }
 
 .cm-s-default span.cm-string {
   color: #fff; }
@@ -174,13 +174,13 @@ div.CodeMirror-selected {
   color: #fff; }
 
 .cm-s-default span.cm-qualifier {
-  color: #888; }
+  color: #998; }
 
 .cm-s-default span.cm-builtin {
   color: #fff; }
 
 .cm-s-default span.cm-bracket {
-  color: #888; }
+  color: #998; }
 
 .cm-s-default span.cm-tag {
   color: #fff; }
@@ -258,9 +258,13 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
     -webkit-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 0px 6px;
     box-shadow: inset rgba(0, 0, 0, 0.5) 0px 0px 6px;
     background-color: rgba(24, 28, 22, 0.8); }
-#prog-editor .CodeMirror-scroller {
+  #prog-editor .CodeMirror .error {
+    color: #f00; }
+#prog-editor .CodeMirror-scroll {
   height: 100%; }
 #prog-editor .CodeMirror-cursor {
   border-left: 1px solid #fff; }
+#prog-editor .CodeMirror-selected {
+  background: #443; }
 #prog-editor.error textarea {
   color: #f00; }

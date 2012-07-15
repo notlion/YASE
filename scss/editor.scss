@@ -22,6 +22,13 @@
     position: absolute;
     left: 30px; right: 50%; top: 30px; bottom: 30px;
     border-radius: 5px;
+    padding: 20px 10px 10px 10px;
+    color: white;
+    font-family: Monospace;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1.1em;
+    text-shadow: #000 0px 1px 3px;
 
     &:hover {
       @include transition-duration(0.1s);
@@ -30,19 +37,18 @@
       background-color: rgba(24, 28, 22, 0.8);
     }
 
-    padding: 20px 10px 10px 10px;
-    color: white;
-    font-family: Monospace;
-    font-size: 14px;
-    font-weight: bold;
-    line-height: 1.1em;
-    text-shadow: #000 0px 1px 3px;
+    & .error {
+      color: #f00;
+    }
   }
-  & .CodeMirror-scroller {
+  & .CodeMirror-scroll {
     height: 100%;
   }
   & .CodeMirror-cursor {
     border-left: 1px solid #fff;
+  }
+  & .CodeMirror-selected {
+    background: #443;
   }
 
   &.error {
