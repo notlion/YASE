@@ -6,7 +6,7 @@ define(function (require) {
     , _        = require("underscore");
 
 
-  var template = [
+  var template_svg = _.template([
     '<svg title="<%= title %>"',
          'width="<%= size %>" height="<%= size %>"',
          'version="1.2" xmlns="http://www.w3.org/2000/svg">',
@@ -17,7 +17,7 @@ define(function (require) {
         '</g>',
       '</g>',
     '</svg>'
-  ].join("");
+  ].join(""));
 
   var ProgEditorButtonView = Backbone.View.extend({
 
@@ -28,7 +28,7 @@ define(function (require) {
     },
 
     render: function () {
-      this.$el.html(_.template(template, this.model.toJSON()));
+      this.$el.html(template_svg(this.model.toJSON()));
       return this;
     }
 

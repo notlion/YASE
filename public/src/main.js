@@ -15,6 +15,9 @@ requirejs.config({
     "zepto": {
       exports: "Zepto"
     },
+    "lzma": {
+      exports: "LZMA"
+    },
     "codemirror": {
       exports: "CodeMirror"
     },
@@ -34,6 +37,7 @@ requirejs.config({
     "backbone":        "lib/backbone",
     "underscore":      "lib/underscore",
     "zepto":           "lib/zepto",
+    "lzma":            "lib/lzma/lzma",
     "codemirror":      "lib/codemirror/codemirror",
     "codemirror-glsl": "lib/codemirror/glsl",
     "soundmanager":    "lib/soundmanager/soundmanager2-nodebug",

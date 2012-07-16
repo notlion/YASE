@@ -20,7 +20,10 @@
 
   & .CodeMirror {
     position: absolute;
-    left: 30px; right: 50%; top: 30px; bottom: 30px;
+    left: 30px; top: 30px; bottom: 30px;
+    min-width: 40em;
+    max-width: -webkit-calc(100% - 80px);
+    max-width: -moz-calc(100% - 80px);
     border-radius: 5px;
     padding: 20px 10px 10px 10px;
     color: white;

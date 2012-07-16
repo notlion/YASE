@@ -164,6 +164,9 @@ define(function (require) {
       tmp = this.fbo_prev_read;
       this.fbo_prev_read = this.fbo_prev_write;
       this.fbo_prev_write = tmp;
+    },
+
+    getUrlParams: function () {
     }
 
   });

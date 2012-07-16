@@ -52,25 +52,21 @@ define(function (require) {
           }, d, e);
           container.animate({
             opacity: open ? 1 : 0
-          }, d, e, function(){
-            if(open)
-              self.cm_code.refresh();
-            else
+          }, d, e, function () {
+            if(!self.get("open"))
               container.hide();
           });
-          if(open)
+          if(open) {
             container.show();
+            self.cm_code.refresh();
+          }
         });
 
       this.render();
     },
 
     toggleOpen: function () {
-      this.setOpen(!this.model.get("open"));
-    },
-
-    setOpen: function (open) {
-      this.model.set("open", open);
+      this.model.set("open", !this.model.get("open"));
     },
 
     getProg: function () {

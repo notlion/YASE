@@ -1,36 +1,36 @@
-define([
-  "lib/lzma/lzma"
-],
-function(){
+define(function (require) {
 
   "use strict";
 
-  var url_hash_regex = /[#&]([\w\-\.,]+)=([\w\-\.,]+)/g;
+  var LZMA = require("lzma");
 
-  function parseUrlHash(hash){
+
+  var url_hash_re = /[#&]([\w\-\.,]+)=([\w\-\.,]+)/g;
+
+  function parseLocationHash (hash) {
     var res, params = {};
-    while((res = url_hash_regex.exec(hash)) != null){
+    while((res = url_hash_regex.exec(hash)) != null) {
       params[res[1]] = res[2].indexOf(",") === -1 ? res[2]
                             : res[2].split(",");
     }
     return params;
   }
 
-  function stringifyParams(params){
-    var hash = [];
-    for(var key in params){
-      hash.push(key + "=" + (params[key] instanceof Array ? params[key].join(",")
-                                                          : params[key]));
+  function stringify (params) {
+    var k, v, hash = [];
+    for(k in params) {
+      v = params[key];
+      hash.push(key + "=" + (v instanceof Array ? v.join(",") : v));
     }
     return hash.join("&");
   }
 
 
-  // LZMA COMPRESSION //
+  // LZMA Compression
 
-  var compressor = LZMA ? new LZMA("/lib/lzma/lzma_worker.js") : null;
+  var compressor = new LZMA("/lib/lzma/lzma_worker.js");
 
-  function hexToByteArray(hex){
+  function hexToByteArray (hex) {
     var tmp, arr = [];
     for(var i = 0; i < hex.length; i += 2){
       tmp = hex.substring(i, i + 2);
@@ -39,9 +39,9 @@ function(){
     return arr;
   }
 
-  function byteArrayToHex(arr){
+  function byteArrayToHex (arr) {
     var tmp, hex = "";
-    for(var i = 0, n = arr.length; i < n; ++i){
+    for(var i = 0, n = arr.length; i < n; ++i) {
       if(arr[i] < 0)
         arr[i] += 256;
 
@@ -56,32 +56,30 @@ function(){
     return hex;
   }
 
+
   return {
 
-    lzmaCompress: function(str, mode, callback){
-      if(compressor){
-        compressor.compress(str, mode, function(res){
-          callback(byteArrayToHex(res));
-        });
-      }
+    lzmaCompress: function (str, mode, callback) {
+      compressor.compress(str, mode, function (res) {
+        callback(byteArrayToHex(res));
+      });
     },
 
-    lzmaDecompress: function(hex, callback){
-      if(compressor)
-        compressor.decompress(hexToByteArray(hex), callback);
-    },
-
-    saveUrlHash: function(params){
-      document.location.hash = stringifyParams(params);
-    },
-
-    loadUrlHash: function(callbacks){
-      var params = parseUrlHash(document.location.hash);
-      for(var name in params){
-        if(name in callbacks)
-          callbacks[name](params[name]);
-      }
+    lzmaDecompress: function (hex, callback) {
+      compressor.decompress(hexToByteArray(hex), callback);
     }
+
+    // saveLocationHashParams: function (params) {
+    //   document.location.hash = stringify(params);
+    // },
+
+    // loadLocationHashParams: function (callbacks) {
+    //   var params = parseUrlHash(document.location.hash);
+    //   for(var name in params){
+    //     if(name in callbacks)
+    //       callbacks[name](params[name]);
+    //   }
+    // }
 
   };
 

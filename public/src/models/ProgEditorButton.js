@@ -10,7 +10,8 @@ define(function (require) {
     defaults: {
       size: 30,
       radius: 13,
-      icon: ""
+      icon: "",
+      title: ""
     }
 
   });
