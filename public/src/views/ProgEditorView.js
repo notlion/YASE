@@ -13,9 +13,7 @@ define(function (require) {
 
 
   var init_template = [
-    '<div class="code-container" style="opacity:0">',
-      // '<textarea class="code" cols="80" spellcheck="false"></textarea>',
-    '</div>',
+    '<div class="code-container" style="opacity:0"></div>',
     '<div class="ui"></div>'
   ].join("");
 
@@ -46,18 +44,18 @@ define(function (require) {
         })
         .on("change:open", function (model, open) {
           var d = 200, e = "ease", vis = "visibility"
-            , container = self.$el.find(".code-container");
+            , sel = self.$el.find(".code-container, .hides-when-closed");
           self.$el.find(".toggle-open .rotate").animate({
             rotate: open ? "45deg" : "0"
           }, d, e);
-          container.animate({
+          sel.animate({
             opacity: open ? 1 : 0
           }, d, e, function () {
-            if(!self.get("open"))
-              container.hide();
+            if(!self.model.get("open"))
+              sel.hide();
           });
           if(open) {
-            container.show();
+            sel.show();
             self.cm_code.refresh();
           }
         });

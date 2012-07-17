@@ -10,10 +10,26 @@
     position: absolute;
     left: 12px; top: 12px;
 
-    & svg {
+    & > div {
       float: left;
-      margin-right: 3px;
+      margin-right: 5px;
+    }
+
+    & svg {
       fill: #000; stroke: #fff; stroke-width: 2px;
+      cursor: pointer;
+    }
+
+    & input {
+      background: #000;
+      color: #fff;
+      border: 2px solid #fff;
+      margin-top: 1px;
+      margin-bottom: 1px;
+      padding: 0 10px 0 10px;
+      font-family: Sans-serif;
+      font-size: 14px;
+      font-weight: bold;
       cursor: pointer;
     }
   }

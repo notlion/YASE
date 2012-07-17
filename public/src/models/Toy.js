@@ -32,6 +32,11 @@ define(function (require) {
         src_fragment: src_step_fragment.trim(),
         src_fragment_template: src_step_template
       });
+      this.editor.buttons.add({
+        name: "save",
+        title: "Save",
+        hides_when_closed: true
+      });
 
       this.audio = new Soundcloud();
 

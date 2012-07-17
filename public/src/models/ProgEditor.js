@@ -63,7 +63,7 @@ define(function (require) {
           name: "toggle-open",
           title: "Toggle Code Open",
           icon: '<path d="M -7,0 L 7,0 M 0,-7 L 0,7"/>'
-        },
+        }
       ]);
 
       this.program = new Embr.Program();
