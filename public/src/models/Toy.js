@@ -54,6 +54,10 @@ define(function (require) {
           if(!isNaN(s))
             self.audio.set("eq_mix", 1 - s);
         })
+        .on("change:define_sim_res", function (editor, res) {
+          if(!isNaN(res) && res > 0)
+            self.set("fbo_res", +res);
+        })
         .on("change:src_fragment", function (editor) {
           self.setSaved(false);
         });
@@ -110,12 +114,18 @@ define(function (require) {
       var fbo_fmt = { width: res, height: res, type: gl.FLOAT }
         , fbo_fmt_position = _.extend(fbo_fmt, { data: position_data });
 
+      if(this.fbo_read)  this.fbo_read.cleanup();
+      if(this.fbo_write) this.fbo_write.cleanup();
+
       this.fbo_read = new Embr.Fbo()
         .attach(new Embr.Texture(fbo_fmt_position))
         .check();
       this.fbo_write = new Embr.Fbo()
         .attach(new Embr.Texture(fbo_fmt_position))
         .check();
+
+      if(this.fbo_prev_read)  this.fbo_prev_read.cleanup();
+      if(this.fbo_prev_write) this.fbo_prev_write.cleanup();
 
       this.fbo_prev_read = new Embr.Fbo()
         .attach(new Embr.Texture(fbo_fmt_position))
@@ -127,6 +137,8 @@ define(function (require) {
 
       // Create index texture
 
+      if(this.tex_index) this.tex_index.cleanup();
+
       this.tex_index = new Embr.Texture(_.extend(fbo_fmt, {
         format: gl.LUMINANCE,
         format_internal: gl.LUMINANCE,
@@ -135,6 +147,9 @@ define(function (require) {
 
 
       // Create vertexbuffers
+
+      if(this.vbo_particles) this.vbo_particles.cleanup();
+      if(this.vbo_plane)     this.vbo_plane.cleanup();
 
       this.vbo_particles = new Embr.Vbo(gl.POINTS)
         .setAttr("a_texcoord", { size: 2, data: texcoord_data })
@@ -158,6 +173,9 @@ define(function (require) {
         format: gl.LUMINANCE,
         format_internal: gl.LUMINANCE
       };
+
+      if(this.tex_eq_left)  this.tex_eq_left.cleanup();
+      if(this.tex_eq_right) this.tex_eq_right.cleanup();
 
       this.tex_eq_left = new Embr.Texture(eq_tex_fmt);
       this.tex_eq_right = new Embr.Texture(eq_tex_fmt);
