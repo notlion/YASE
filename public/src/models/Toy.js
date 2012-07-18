@@ -23,7 +23,7 @@ define(function (require) {
   var Toy = Backbone.Model.extend({
 
     defaults: {
-      fbo_res: 128,
+      fbo_res: 512,
       rotation: null
     },
 
