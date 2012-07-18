@@ -13,6 +13,16 @@
     & > div {
       float: left;
       margin-right: 5px;
+
+      &.disabled {
+        & svg {
+          stroke: #998;
+        }
+        & input {
+          color: #998;
+          border-color: #998;
+        }
+      }
     }
 
     & svg {

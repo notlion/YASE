@@ -27,6 +27,8 @@ define(function (require) {
       // gl = Embr.wrapContextWithErrorChecks(gl);
       toy.set("context", gl);
 
+      this.arcball = new Arcball(this.el);
+
 
       // Init Subviews
 
@@ -36,7 +38,13 @@ define(function (require) {
 
       // Assign event listeners
 
-      toy.editor.on("change:define_pixel_scale", this.layout, this);
+      toy.on("change:rotation", function (toy, r) {
+        if(r && r.length === 4)
+          self.arcball.setRotation(r);
+      });
+
+      toy.editor
+        .on("change:define_pixel_scale", this.layout, this);
 
       toy.audio
         .on("change:queued_sound", function (audio, sound) {
@@ -44,10 +52,9 @@ define(function (require) {
           audio.playQueued();
         });
 
-
-      // Init Arcball
-
-      this.arcball = new Arcball(this.el);
+      this.arcball.on("change:rotation", function (arcball, r) {
+        toy.set("rotation", [ r[0], r[1], r[2], r[3] ]);
+      });
 
 
       // Init Mouse

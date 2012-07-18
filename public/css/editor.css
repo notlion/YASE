@@ -226,6 +226,11 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
   #prog-editor .ui > div {
     float: left;
     margin-right: 5px; }
+    #prog-editor .ui > div.disabled svg {
+      stroke: #998; }
+    #prog-editor .ui > div.disabled input {
+      color: #998;
+      border-color: #998; }
   #prog-editor .ui svg {
     fill: #000;
     stroke: #fff;

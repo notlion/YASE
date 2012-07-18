@@ -48,9 +48,7 @@ define(function (require) {
           self.$el.find(".toggle-open .rotate").animate({
             rotate: open ? "45deg" : "0"
           }, d, e);
-          sel.animate({
-            opacity: open ? 1 : 0
-          }, d, e, function () {
+          sel.animate({ opacity: open ? 1 : 0 }, d, e, function () {
             if(!self.model.get("open"))
               sel.hide();
           });
@@ -58,6 +56,10 @@ define(function (require) {
             sel.show();
             self.cm_code.refresh();
           }
+        })
+        .on("change:src_fragment", function (model, src) {
+          if(src != self.cm_code.getValue())
+            self.cm_code.setValue(src);
         });
 
       this.render();

@@ -5,6 +5,8 @@ html, body {
 
 body {
   overflow: hidden;
+  background-color: #000;
+
   &.popped {
     background-color: #333;
   }

@@ -2,25 +2,47 @@ define(function (require) {
 
   "use strict";
 
-  var LZMA = require("lzma");
+  var _    = require("underscore")
+    , LZMA = require("lzma");
+
+
+  var Params = {};
+
+
+  var trim_leading_zero_re  = /^\-?0+(?!\.0+$)/
+    , trim_trailing_zero_re = /\.?0+$/;
+
+  function formatNumber (num, len) {
+    if(len < 1)
+      return num;
+    return num.toFixed(len)
+      .replace(trim_leading_zero_re, num < 0 ? "-" : "")
+      .replace(trim_trailing_zero_re, "");
+  }
 
 
   var url_hash_re = /[#&]([\w\-\.,]+)=([\w\-\.,]+)/g;
 
-  function parseLocationHash (hash) {
+  Params.parse = function (hash) {
     var res, params = {};
-    while((res = url_hash_regex.exec(hash)) != null) {
+    while(res = url_hash_re.exec(hash)) {
       params[res[1]] = res[2].indexOf(",") === -1 ? res[2]
                             : res[2].split(",");
     }
     return params;
   }
 
-  function stringify (params) {
-    var k, v, hash = [];
+  Params.stringify = function (params, fract_len) {
+    var k, v, hash = [], num = "number";
     for(k in params) {
-      v = params[key];
-      hash.push(key + "=" + (v instanceof Array ? v.join(",") : v));
+      v = params[k];
+      if(typeof v == num)
+        v = formatNumber(v, fract_len);
+      else if(v instanceof Array)
+        v = _.map(v, function (v) {
+          return typeof v == num ? formatNumber(v, fract_len) : v;
+        }).join(",");
+      hash.push(k + "=" + v);
     }
     return hash.join("&");
   }
@@ -56,31 +78,17 @@ define(function (require) {
     return hex;
   }
 
-
-  return {
-
-    lzmaCompress: function (str, mode, callback) {
-      compressor.compress(str, mode, function (res) {
-        callback(byteArrayToHex(res));
-      });
-    },
-
-    lzmaDecompress: function (hex, callback) {
-      compressor.decompress(hexToByteArray(hex), callback);
-    }
-
-    // saveLocationHashParams: function (params) {
-    //   document.location.hash = stringify(params);
-    // },
-
-    // loadLocationHashParams: function (callbacks) {
-    //   var params = parseUrlHash(document.location.hash);
-    //   for(var name in params){
-    //     if(name in callbacks)
-    //       callbacks[name](params[name]);
-    //   }
-    // }
-
+  Params.lzmaCompress = function (str, mode, callback) {
+    compressor.compress(str, mode, function (res) {
+      callback(byteArrayToHex(res));
+    });
   };
+
+  Params.lzmaDecompress = function (hex, callback) {
+    compressor.decompress(hexToByteArray(hex), callback);
+  };
+
+
+  return Params;
 
 });

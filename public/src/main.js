@@ -46,4 +46,5 @@ requirejs.config({
 });
 require([ "src/models/Toy", "src/views/ToyView", "glmatrix" ], function (Toy, ToyView) {
   window.toyview = new ToyView({ model: window.toy = new Toy() });
+  window.toy.loadParams();
 });

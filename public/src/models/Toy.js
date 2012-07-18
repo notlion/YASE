@@ -6,6 +6,8 @@ define(function (require) {
     , _        = require("underscore")
     , Embr     = require("embr")
 
+    , Params = require("src/params")
+
     , ProgEditor = require("src/models/ProgEditor")
     , Soundcloud = require("src/models/Soundcloud")
 
@@ -21,7 +23,8 @@ define(function (require) {
   var Toy = Backbone.Model.extend({
 
     defaults: {
-      fbo_res: 512
+      fbo_res: 512,
+      rotation: null
     },
 
     initialize: function () {
@@ -40,6 +43,9 @@ define(function (require) {
 
       this.audio = new Soundcloud();
 
+
+      // Event Listeners
+
       this.editor
         .on("change:define_track", function (editor, url) {
           self.audio.loadTrackData(url);
@@ -47,12 +53,20 @@ define(function (require) {
         .on("change:define_smoothing", function (editor, s) {
           if(!isNaN(s))
             self.audio.set("eq_mix", 1 - s);
+        })
+        .on("change:src_fragment", function (editor) {
+          self.setSaved(false);
         });
 
+      this
+        .on("change:context", function () {
+          self.initGL();
+        })
+        .on("change:rotation", function () {
+          self.setSaved(false);
+        });
 
-      // Event Listeners
-
-      this.on("change:context", this.initGL, this);
+      this.editor.buttons.get("save").on("click", this.saveParams, this);
     },
 
     initGL: function () {
@@ -149,6 +163,8 @@ define(function (require) {
       this.tex_eq_right = new Embr.Texture(eq_tex_fmt);
 
 
+      // Events
+
       this.editor.on("compile", function (program) {
         self.vbo_plane.setProg(program);
       });
@@ -171,7 +187,38 @@ define(function (require) {
       this.fbo_prev_write = tmp;
     },
 
-    getUrlParams: function () {
+    setSaved: function (saved) {
+      this.editor.buttons.get("save").set({
+        title: saved ? "Saved" : "Save",
+        enabled: !saved
+      });
+    },
+
+    saveParams: function () {
+      var self = this;
+      Params.lzmaCompress(this.editor.get("src_fragment"), 1, function (res) {
+        window.location.hash = Params.stringify({
+          r: self.get("rotation"),
+          z: res
+        }, 3);
+        self.setSaved(true);
+      });
+    },
+
+    loadParams: function () {
+      var self = this
+        , params = Params.parse(window.location.hash);
+
+      if(params) {
+        if("z" in params) {
+          Params.lzmaDecompress(params.z, function (res) {
+            self.editor.set("src_fragment", res);
+          });
+        }
+        if("r" in params && params.r.length === 4) {
+          self.set("rotation", params.r);
+        }
+      }
     }
 
   });

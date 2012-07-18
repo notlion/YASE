@@ -29,19 +29,31 @@ define(function (require) {
   var ProgEditorButtonView = Backbone.View.extend({
 
     initialize: function () {
-      var className = this.model.get("name");
-      if(this.model.get("hides_when_closed"))
-        className += " hides-when-closed";
+      var self = this;
 
-      this.setElement(this.make("div", { "class": className }));
+      this.$el.on("click", function (e) {
+        e.preventDefault();
+        self.model.trigger("click");
+      });
 
       this.model.on("change", this.render, this);
+
       this.render();
     },
 
     render: function () {
-      var tpl = this.model.has("icon") ? template_svg : template_button;
-      this.$el.html(tpl(this.model.toJSON()));
+      var tpl = this.model.has("icon") ? template_svg : template_button
+        , classNames = [ this.model.get("name") ];
+
+      if(this.model.get("hides_when_closed"))
+        classNames.push("hides-when-closed");
+      if(!this.model.get("enabled"))
+        classNames.push("disabled");
+
+      this.$el
+        .attr("class", classNames.join(" "))
+        .html(tpl(this.model.toJSON()));
+
       return this;
     }
 

@@ -2,7 +2,9 @@ define(function (require) {
 
   "use strict";
 
-  var utils = require("src/utils");
+  var Backbone = require("backbone")
+    , _        = require("underscore")
+    , utils    = require("src/utils");
 
 
   function vec3LengthSq (vec) {
@@ -21,7 +23,7 @@ define(function (require) {
   }
 
 
-  var Arcball = function (canvas) {
+  function Arcball (canvas) {
     var rotation = quat4.create([ 0, 0, 0, 1 ])
       , initial_rotation = quat4.create()
       , distance = 5, distance_min = 0.1, distance_max = 15
@@ -63,6 +65,8 @@ define(function (require) {
 
       quat4.multiply(initial_rotation, current_rotation, rotation);
       quat4.normalize(rotation);
+
+      arcball.trigger("change:rotation", this, rotation);
     }
 
     function onMouseUp (e) {
@@ -113,6 +117,9 @@ define(function (require) {
     // Gecko has it's own mouse wheel event
     canvas.addEventListener("MozMousePixelScroll", onMouseWheel);
   };
+
+  _.extend(Arcball.prototype, Backbone.Events);
+
 
   return Arcball;
 

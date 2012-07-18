@@ -8,10 +8,11 @@ define(function (require) {
   var ProgEditorButton = Backbone.Model.extend({
 
     defaults: {
-      size:   30,
-      radius: 13,
-      icon:   null,
-      title:  "",
+      enabled: true,
+      size:    30,
+      radius:  13,
+      icon:    null,
+      title:   "",
       hides_when_closed: false
     },
 
