@@ -23,7 +23,7 @@ define(function (require) {
   var Toy = Backbone.Model.extend({
 
     defaults: {
-      fbo_res: 512,
+      fbo_res: 128,
       rotation: null
     },
 
@@ -59,7 +59,7 @@ define(function (require) {
         });
 
       this
-        .on("change:context", function () {
+        .on("change:context change:fbo_res", function () {
           self.initGL();
         })
         .on("change:rotation", function () {
