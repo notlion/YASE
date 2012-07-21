@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var express = require("express");
+var build = require("./build");
 
 var app = express.createServer(express.logger());
 app.configure(function () {
@@ -19,9 +20,25 @@ app.configure("production", function () {
   app.use(express.errorHandler());
 });
 
-app.get("/", function (req, res) {
+
+var compiled = false;
+
+function renderIndex (res) {
   res.render("index", { env: app.settings.env, layout: false });
+}
+
+app.get("/", function (req, res) {
+  if(!compiled && app.settings.env == "production") {
+    build.go(function () {
+      renderIndex(res);
+      compiled = true;
+    });
+  }
+  else {
+    renderIndex(res);
+  }
 });
+
 
 var port = process.env.PORT || 3000;
 

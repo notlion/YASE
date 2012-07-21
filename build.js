@@ -1,4 +1,4 @@
-{
+var config = {
   baseUrl: "public",
   name: "lib/almond",
   include: [ "src/main" ],
@@ -51,4 +51,10 @@
     "soundmanager":    "lib/soundmanager/soundmanager2-nodebug",
     "soundcloud":      "lib/soundcloud-sdk"
   }
-}
+};
+
+var requirejs = require("requirejs");
+
+exports.go = function (callback) {
+  requirejs.optimize(config, callback);
+};
