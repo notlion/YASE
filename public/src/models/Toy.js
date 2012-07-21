@@ -171,7 +171,8 @@ define(function (require) {
         width: this.audio.get("num_bands"),
         height: 1,
         format: gl.LUMINANCE,
-        format_internal: gl.LUMINANCE
+        format_internal: gl.LUMINANCE,
+        data: null
       };
 
       if(this.tex_eq_left)  this.tex_eq_left.cleanup();
