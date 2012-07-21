@@ -105,12 +105,19 @@ define(function (require) {
     },
 
     playQueued: function () {
+      this.stop();
       var sound = this.get("queued_sound");
       if(sound) {
         sound.play(this.sm_options);
         this.unset("queued_sound");
         this.set("playing_sound", sound);
       }
+    },
+
+    stop: function () {
+      var sound = this.get("playing_sound");
+      if(sound)
+        sound.stop();
     }
 
   });
