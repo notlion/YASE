@@ -215,10 +215,10 @@ define(function (require) {
     saveParams: function () {
       var self = this;
       Params.lzmaCompress(this.editor.get("src_fragment"), 1, function (res) {
-        window.location.hash = Params.stringify({
-          r: self.get("rotation"),
-          z: res
-        }, 3);
+        var params = { z: res };
+        if(self.has("rotation"))
+          params.r = self.get("rotation");
+        window.location.hash = Params.stringify(params, 3);
         self.setSaved(true);
       });
     },

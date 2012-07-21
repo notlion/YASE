@@ -3,9 +3,12 @@
   name: "lib/almond",
   include: [ "src/main" ],
   insertRequire: [ "src/main" ],
-  out: "public/main-built.js",
-  wrap: true,
+  out: "public/src/main-built.js",
   preserveLicenseComments: false,
+  useStrict: true,
+  wrap: {
+    start: "(function(){window.SM2_DEFER = true;", end: "}());"
+  },
   shim: {
     "backbone": {
       deps: [ "underscore", "zepto" ],
@@ -46,6 +49,6 @@
     "codemirror":      "lib/codemirror/codemirror",
     "codemirror-glsl": "lib/codemirror/glsl",
     "soundmanager":    "lib/soundmanager/soundmanager2-nodebug",
-    "soundcloud":      "http://connect.soundcloud.com/sdk"
+    "soundcloud":      "lib/soundcloud-sdk"
   }
 }

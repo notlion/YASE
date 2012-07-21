@@ -23,9 +23,16 @@ define(function (require) {
 
       // Init WebGL
 
-      var gl = utils.getWebGLContext(this.el);
-      // gl = Embr.wrapContextWithErrorChecks(gl);
-      toy.set("context", gl);
+      toy.set("context", utils.getWebGLContext(this.el));
+
+      this.$el
+        .on("webglcontextlost", function (e) {
+          e.preventDefault();
+          console.log("Context Lost :(");
+        })
+        .on("webglcontextretored", function (e) {
+          utils.getWebGLContext(this.el)
+        });
 
       this.arcball = new Arcball(this.el);
 
@@ -95,6 +102,10 @@ define(function (require) {
         utils.requestAnimationFrame(renderLoop);
         self.render();
       })();
+    },
+
+    stop: function () {
+
     },
 
     render: function () {

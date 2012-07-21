@@ -8,18 +8,21 @@ define(function () {
     return v < min ? min : (v > max ? max : v);
   };
 
-  var requestAnimFrameFn = (function () {
-    return window.webkitRequestAnimationFrame ||
-           window.mozRequestAnimationFrame    ||
-           window.oRequestAnimationFrame      ||
-           window.msRequestAnimationFrame     ||
-           function (callback) {
-             window.setTimeout(callback, 1000 / 60);
-           };
-  })();
+  var vendors = [ "ms", "moz", "webkit", "o" ];
+  var requestAnimFrame = window.requestAnimationFrame
+    , cancelAnimFrame  = window.cancelAnimationFrame;
+
+  for(var i = 0; i < vendors.length && !requestAnimFrame; ++i) {
+    requestAnimFrame = window[vendors[i] + "RequestAnimationFrame"];
+    cancelAnimFrame  = window[vendors[i] + "CancelAnimationFrame"] ||
+                       window[vendors[i] + "CancelRequestAnimationFrame"];
+  }
 
   utils.requestAnimationFrame = function (callback) {
-    requestAnimFrameFn.call(window, callback); // Call in window scope
+    return requestAnimFrame.call(window, callback);
+  };
+  utils.cancelAnimationFrame = function (callback) {
+    return cancelAnimFrame.call(window, callback);
   };
 
   utils.getWebGLContext = function (canvas) {

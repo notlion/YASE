@@ -1,4 +1,3 @@
-window.SM2_DEFER = true;
 requirejs.config({
   shim: {
     "backbone": {
@@ -41,10 +40,12 @@ requirejs.config({
     "codemirror":      "lib/codemirror/codemirror",
     "codemirror-glsl": "lib/codemirror/glsl",
     "soundmanager":    "lib/soundmanager/soundmanager2-nodebug",
-    "soundcloud":      "http://connect.soundcloud.com/sdk"
+    "soundcloud":      "lib/soundcloud-sdk"
   }
 });
+window.SM2_DEFER = true;
 require([ "src/models/Toy", "src/views/ToyView", "glmatrix" ], function (Toy, ToyView) {
-  window.toyview = new ToyView({ model: window.toy = new Toy() });
+  window.toy = new Toy();
+  window.toyview = new ToyView({ model: window.toy });
   window.toy.loadParams();
 });

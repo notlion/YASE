@@ -1,63 +1,63 @@
 /// This code is licensed under the MIT License.  See LICENSE for more details.
 
 /// Does the environment support web workers?  If not, let's fake it.
-if (!Worker) {
-    ///NOTE: IE8 needs onmessage to be created first, IE9 cannot, IE7- do not care.
-    /*@cc_on
-        /// Is this IE8-?
-        @if (@_jscript_version < 9)
-            var onmessage = function () {};
-        @end
-    @*/
+// if (!Worker) {
+//     ///NOTE: IE8 needs onmessage to be created first, IE9 cannot, IE7- do not care.
+//     /*@cc_on
+//         /// Is this IE8-?
+//         @if (@_jscript_version < 9)
+//             var onmessage = function () {};
+//         @end
+//     @*/
 
-    /// If this were a regular function statement, IE9 would run it first and therefore make the Worker variable truthy because of hoisting.
-    var Worker = function(script) {
-        var global_var,
-            return_object = {};
+//     /// If this were a regular function statement, IE9 would run it first and therefore make the Worker variable truthy because of hoisting.
+//     var Worker = function(script) {
+//         var global_var,
+//             return_object = {};
 
-        /// Determine the global variable (it's called "window" in browsers, "global" in Node.js).
-        if (typeof window !== "undefined") {
-            global_var = window;
-        } else if (global) {
-            global_var = global;
-        }
+//         /// Determine the global variable (it's called "window" in browsers, "global" in Node.js).
+//         if (typeof window !== "undefined") {
+//             global_var = window;
+//         } else if (global) {
+//             global_var = global;
+//         }
 
-        /// Is the environment is browser?
-        /// If not, create a require() function, if it doesn't have one.
-        if (global_var.document && !global_var.require) {
-            global_var.require = function (path) {
-                var script_tag  = document.createElement("script");
-                script_tag.type ="text/javascript";
-                script_tag.src  = path;
-                document.getElementsByTagName('head')[0].appendChild(script_tag);
-            };
-        }
+//         /// Is the environment is browser?
+//         /// If not, create a require() function, if it doesn't have one.
+//         if (global_var.document && !global_var.require) {
+//             global_var.require = function (path) {
+//                 var script_tag  = document.createElement("script");
+//                 script_tag.type ="text/javascript";
+//                 script_tag.src  = path;
+//                 document.getElementsByTagName('head')[0].appendChild(script_tag);
+//             };
+//         }
 
-        /// Dummy onmessage() function.
-        return_object.onmessage = function () {};
+//         /// Dummy onmessage() function.
+//         return_object.onmessage = function () {};
 
-        /// This is the function that the main script calls to post a message to the "worker."
-        return_object.postMessage = function (message) {
-            /// Delay the call just in case the "worker" script has not had time to load.
-            setTimeout(function () {
-                /// Call the global onmessage() created by the "worker."
-                ///NOTE: Wrap the message in an object.
-                global_var.onmessage({data: message});
-            }, 10);
-        };
+//         /// This is the function that the main script calls to post a message to the "worker."
+//         return_object.postMessage = function (message) {
+//             /// Delay the call just in case the "worker" script has not had time to load.
+//             setTimeout(function () {
+//                 /// Call the global onmessage() created by the "worker."
+//                 ///NOTE: Wrap the message in an object.
+//                 global_var.onmessage({data: message});
+//             }, 10);
+//         };
 
-        /// Create a global postMessage() function for the "worker" to call.
-        global_var.postMessage = function (e) {
-            ///NOTE: Wrap the message in an object.
-            ///TODO: Add more properties.
-            return_object.onmessage({data: e, type: "message"});
-        };
+//         /// Create a global postMessage() function for the "worker" to call.
+//         global_var.postMessage = function (e) {
+//             ///NOTE: Wrap the message in an object.
+//             ///TODO: Add more properties.
+//             return_object.onmessage({data: e, type: "message"});
+//         };
 
-        require(script);
+//         require(script);
 
-        return return_object;
-    };
-}
+//         return return_object;
+//     };
+// }
 
 
 ///NOTE: The "this" keyword is the global context ("window" variable) if loaded via a <script> tag
