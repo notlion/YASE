@@ -32,7 +32,6 @@ define(function (require) {
 
       this.editor = new ProgEditor({
         src_vertex: src_step_vertex,
-        src_fragment: src_step_fragment.trim(),
         src_fragment_template: src_step_template
       });
       this.editor.buttons.add({
@@ -216,28 +215,39 @@ define(function (require) {
     saveParams: function () {
       var self = this;
       Params.lzmaCompress(this.editor.get("src_fragment"), 1, function (res) {
-        var params = { z: res };
+        var params = {};
         if(self.has("rotation"))
           params.r = self.get("rotation");
+        params.z = res;
         window.location.hash = Params.stringify(params, 3);
         self.setSaved(true);
       });
     },
 
-    loadParams: function () {
-      var self = this
-        , params = Params.parse(window.location.hash);
+    loadParams: function (callback) {
+      var params = Params.parse(window.location.hash);
+      if(params.z) {
+        Params.lzmaDecompress(params.z, function (res) {
+          params.z = res;
+          callback(params);
+        });
+      }
+      else {
+        callback(params);
+      }
+    },
 
-      if(params) {
-        if("z" in params) {
-          Params.lzmaDecompress(params.z, function (res) {
-            self.editor.set("src_fragment", res);
-          });
-        }
-        if("r" in params && params.r.length === 4) {
+    start: function () {
+      var self = this;
+      this.loadParams(function (params) {
+        if(params.r instanceof Array && params.r.length === 4) {
           self.set("rotation", params.r);
         }
-      }
+        if(params.z)
+          self.editor.set("src_fragment", params.z);
+        else
+          self.editor.set("src_fragment", src_step_fragment);
+      });
     }
 
   });

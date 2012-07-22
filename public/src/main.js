@@ -47,5 +47,5 @@ window.SM2_DEFER = true;
 require([ "src/models/Toy", "src/views/ToyView", "glmatrix" ], function (Toy, ToyView) {
   window.toy = new Toy();
   window.toyview = new ToyView({ model: window.toy });
-  window.toy.loadParams();
+  window.toy.start();
 });

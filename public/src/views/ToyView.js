@@ -11,6 +11,8 @@ define(function (require) {
 
     , ProgEditorView = require("src/views/ProgEditorView");
 
+  window.Embr = Embr;
+
 
   var ToyView = Backbone.View.extend({
 
@@ -23,16 +25,20 @@ define(function (require) {
 
       // Init WebGL
 
-      toy.set("context", utils.getWebGLContext(this.el));
+      this.el.addEventListener("webglcontextlost", function (e) {
+        e.preventDefault();
+        self.stop();
+        console.log("Context Lost :(");
+      }, false);
+      this.el.addEventListener("webglcontextrestored", function (e) {
+        // toy.set("context", utils.getWebGLContext(this.el));
+        toy.initGL();
+        toy.editor.compile();
+        self.start();
+        console.log("Context Restored :)");
+      }, false);
 
-      this.$el
-        .on("webglcontextlost", function (e) {
-          e.preventDefault();
-          console.log("Context Lost :(");
-        })
-        .on("webglcontextretored", function (e) {
-          utils.getWebGLContext(this.el)
-        });
+      toy.set("context", utils.getWebGLContext(this.el));
 
       this.arcball = new Arcball(this.el);
 
@@ -99,13 +105,13 @@ define(function (require) {
       this.start_time = Date.now();
       this.frame_num = 0;
       (function renderLoop () {
-        utils.requestAnimationFrame(renderLoop);
+        self.loop_handle = utils.requestAnimationFrame(renderLoop);
         self.render();
       })();
     },
 
     stop: function () {
-
+      utils.cancelAnimationFrame(this.loop_handle);
     },
 
     render: function () {

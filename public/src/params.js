@@ -27,7 +27,7 @@ define(function (require) {
     var res, params = {};
     while(res = url_hash_re.exec(hash)) {
       params[res[1]] = res[2].indexOf(",") === -1 ? res[2]
-                            : res[2].split(",");
+                                                  : res[2].split(",");
     }
     return params;
   }

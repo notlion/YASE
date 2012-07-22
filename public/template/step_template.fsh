@@ -19,8 +19,8 @@ float ampRight(float x) {
 float rand(vec2 p) {
   return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453);
 }
-float rand(float p) {
-  return fract(sin(dot(p, 12.9898)) * 43758.5453);
+float rand(float x) {
+  return rand(vec2(x, 0.));
 }
 vec3 rand3(float x, float y) {
   float phi = rand(x) * PI * 2.;
