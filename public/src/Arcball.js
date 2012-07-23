@@ -107,9 +107,9 @@ define(function (require) {
       return mat3.inverse(quat4.toMat3(rotation));
     };
 
-    this.getModelView = function () {
+    this.getModelView = function (dest) {
       var r = quat4.inverse(rotation, Array(4));
-      return mat4.fromRotationTranslation(r, [ 0.0, 0.0, -distance ]);
+      return mat4.fromRotationTranslation(r, [ 0.0, 0.0, -distance ], dest);
     };
 
     canvas.addEventListener("mousedown", onMouseDown);

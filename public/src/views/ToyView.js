@@ -40,6 +40,15 @@ define(function (require) {
 
       toy.set("context", utils.getWebGLContext(this.el));
 
+
+      // Init Arcball + Matrices
+
+      this.projection = mat4.create();
+      this.modelview = mat4.create();
+      this.modelview_inv = mat4.create();
+      this.mvp = mat4.create();
+      this.camera_pos = vec3.create();
+
       this.arcball = new Arcball(this.el);
 
 
@@ -128,6 +137,15 @@ define(function (require) {
         , res = toy.get("fbo_res");
 
 
+      this.arcball.getModelView(this.modelview);
+      mat4.perspective(60, this.aspect, 0.01, 100.0, this.projection);
+      mat4.multiply(this.projection, this.modelview, this.mvp);
+
+      vec3.set([ 0, 0, 0 ], this.camera_pos);
+      mat4.inverse(this.modelview, this.modelview_inv);
+      mat4.multiplyVec3(this.modelview_inv, this.camera_pos);
+
+
       gl.viewport(0, 0, res, res);
       gl.disable(gl.DEPTH_TEST);
       gl.disable(gl.BLEND);
@@ -165,7 +183,8 @@ define(function (require) {
           amp_right:     4,
           aspect:        this.aspect,
           resolution:    this.resolution,
-          mouse:         this.mouse_pos,
+          mousePos:      this.mouse_pos,
+          cameraPos:     this.camera_pos,
           time:          time,
           frame:         this.frame_num,
           progress:      toy.audio.get("progress")
@@ -192,14 +211,10 @@ define(function (require) {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       gl.enable(gl.DEPTH_TEST);
 
-      var projection = mat4.perspective(60, this.aspect, 0.01, 100.0)
-        , modelview = this.arcball.getModelView()
-        , mvp = mat4.multiply(projection, modelview, mat4.create());
-
       toy.fbo_read.textures[0].bind(0); // Position
 
       toy.prog_final.use({
-        u_mvp: mvp,
+        u_mvp: this.mvp,
         u_position: 0,
         u_color: 1,
         u_point_size: +this.model.editor.get("define_point_size") || 2

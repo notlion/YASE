@@ -81,8 +81,9 @@ float noise(in float x, in float y, in float z) {
 // YASE Specific
 
 uniform sampler2D position, position_prev, index, amp_left, amp_right;
+uniform vec3 cameraPos;
+uniform vec2 mousePos, resolution;
 uniform float aspect, time, frame, progress;
-uniform vec2 mouse, resolution;
 
 varying vec2 texcoord;
 
