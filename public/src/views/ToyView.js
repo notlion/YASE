@@ -51,10 +51,13 @@ define(function (require) {
 
       // Assign event listeners
 
-      toy.on("change:rotation", function (toy, r) {
-        if(r && r.length === 4)
+      toy
+        .on("change:rotation", function (toy, r) {
           self.arcball.setRotation(r);
-      });
+        })
+        .on("change:distance", function (toy, d) {
+          self.arcball.setDistance(d);
+        });
 
       toy.editor
         .on("change:define_pixel_scale", this.layout, this);
@@ -65,9 +68,13 @@ define(function (require) {
           audio.playQueued();
         });
 
-      this.arcball.on("change:rotation", function (arcball, r) {
-        toy.set("rotation", [ r[0], r[1], r[2], r[3] ]);
-      });
+      this.arcball
+        .on("change:rotation", function (arcball, r) {
+          toy.set("rotation", [ r[0], r[1], r[2], r[3] ]);
+        })
+        .on("change:distance", function (arcball, d) {
+          toy.set("distance", d);
+        });
 
 
       // Init Mouse

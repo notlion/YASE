@@ -88,6 +88,7 @@ define(function (require) {
       // Gecko scroll events expose wheelDelta as detail
       var delta = e.detail * -2 || e.wheelDelta;
       arcball.setDistance(distance - delta * 0.001);
+      arcball.trigger("change:distance", this, distance);
     }
 
     this.setDistance = function (d) {

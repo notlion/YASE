@@ -24,7 +24,8 @@ define(function (require) {
 
     defaults: {
       fbo_res: 512,
-      rotation: null
+      rotation: null,
+      distance: null
     },
 
     initialize: function () {
@@ -65,7 +66,7 @@ define(function (require) {
         .on("change:context change:fbo_res", function () {
           self.initGL();
         })
-        .on("change:rotation", function () {
+        .on("change:rotation change:distance", function () {
           self.setSaved(false);
         });
 
@@ -218,6 +219,8 @@ define(function (require) {
         var params = {};
         if(self.has("rotation"))
           params.r = self.get("rotation");
+        if(self.has("distance"))
+          params.d = self.get("distance");
         params.z = res;
         window.location.hash = Params.stringify(params, 3);
         self.setSaved(true);
@@ -243,6 +246,8 @@ define(function (require) {
         if(params.r instanceof Array && params.r.length === 4) {
           self.set("rotation", params.r);
         }
+        if(!isNaN(params.d))
+          self.set("distance", +params.d);
         if(params.z)
           self.editor.set("src_fragment", params.z);
         else
