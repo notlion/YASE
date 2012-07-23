@@ -47,6 +47,9 @@ define(function (require) {
       // Event Listeners
 
       this.editor
+        .on("change:errors", function (editor, errs) {
+          console.log("Compile Errors:\n", errs);
+        })
         .on("change:define_track", function (editor, url) {
           self.audio.loadTrackData(url);
         })
