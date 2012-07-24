@@ -103,7 +103,7 @@ define(function (require) {
 
       for(i = 0; i < texcoord_data.length; ++i) {
         i2 = i * 2; i4 = i * 4;
-        index_data[i] = i / (n - 1);
+        index_data[i] = i / n;
         texcoord_data[i2    ] = (i % res) / res;
         texcoord_data[i2 + 1] = Math.floor(i / res) / res;
         position_data[i4    ] = texcoord_data[i2    ] - 0.5;

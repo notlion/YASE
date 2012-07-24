@@ -88,7 +88,7 @@ define(function (require) {
 
       // Init Mouse
 
-      this.mouse_pos = new Float32Array([ 0, 0 ]);
+      this.mouse_pos = vec3.create();
 
       $(document).on("mousemove", function (e) {
         self.mouse_pos[0] = e.clientX / self.el.clientWidth;
@@ -112,7 +112,6 @@ define(function (require) {
       var sc = +this.model.editor.get("define_pixel_scale") || 1;
       var w = this.el.width = this.el.clientWidth / sc;
       var h = this.el.height = this.el.clientHeight / sc;
-      this.resolution = new Float32Array([ w, h ]);
       this.aspect = w / h;
     },
 
@@ -181,8 +180,8 @@ define(function (require) {
           index:         2,
           amp_left:      3,
           amp_right:     4,
-          aspect:        this.aspect,
-          resolution:    this.resolution,
+          resolution:    res,
+          count:         res * res,
           mousePos:      this.mouse_pos,
           cameraPos:     this.camera_pos,
           time:          time,

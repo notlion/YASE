@@ -4,16 +4,16 @@ precision highp float;
 // Noise Functions from:
 // https://github.com/ashima/webgl-noise
 
-vec3 _mod289(vec3 x) {
+vec3 _mod289(in vec3 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
-vec4 _mod289(vec4 x) {
+vec4 _mod289(in vec4 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
-vec4 _permute(vec4 x) {
+vec4 _permute(in vec4 x) {
   return _mod289(((x * 34.0) + 1.0) * x);
 }
-vec4 taylorInvSqrt(vec4 r) {
+vec4 taylorInvSqrt(in vec4 r) {
   return 1.79284291400159 - 0.85373472095314 * r;
 }
 
@@ -81,33 +81,47 @@ float noise(in float x, in float y, in float z) {
 // YASE Specific
 
 uniform sampler2D position, position_prev, index, amp_left, amp_right;
-uniform vec3 cameraPos;
-uniform vec2 mousePos, resolution;
-uniform float aspect, time, frame, progress;
+uniform vec3 cameraPos, mousePos;
+uniform float time, frame, resolution, count, progress;
 
 varying vec2 texcoord;
 
 #define PI 3.141592653589793
 #define TWOPI 6.283185307179586
 
-float ampLeft(float x) {
+float ampLeft(in float x) {
   return texture2D(amp_left, vec2(x, 0.)).x;
 }
-float ampRight(float x) {
+float ampRight(in float x) {
   return texture2D(amp_right, vec2(x, 0.)).x;
 }
 
-float rand(vec2 p) {
-  return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453);
+vec4 getPos(in float t) {
+  float tr = t * resolution;
+  return texture2D(position, vec2(fract(tr), floor(tr) / resolution));
 }
-float rand(float x) {
+
+float rand(in vec2 p) {
+  return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+}
+float rand(in float x, in float y) {
+  return rand(vec2(x, y));
+}
+float rand(in float x) {
   return rand(vec2(x, 0.));
 }
-vec3 rand3(float x, float y) {
-  float phi = rand(x) * PI * 2.;
-  float ct = rand(y) * 2. - 1.;
+
+vec3 rand3(in vec2 p) {
+  float phi = rand(p) * PI * 2.;
+  float ct = rand(p.yx) * 2. - 1.;
   float rho = sqrt(1. - ct * ct);
   return vec3(rho * cos(phi), rho * sin(phi), ct);
+}
+vec3 rand3(in float x, in float y) {
+  return rand3(vec2(x, y));
+}
+vec3 rand3(in float x) {
+  return rand3(x, x * 2.);
 }
 
 <%= src_fragment %>
