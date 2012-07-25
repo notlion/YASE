@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var express = require("express");
-var build   = require("./build");
 
 
 var app = express.createServer(express.logger());

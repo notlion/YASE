@@ -3,7 +3,7 @@
   name: "lib/almond",
   include: [ "src/main" ],
   insertRequire: [ "src/main" ],
-  out: "public/src/main-built.js",
+  out: "public/build/main.js",
   preserveLicenseComments: false,
   useStrict: true,
   wrap: {
