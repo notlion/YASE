@@ -105,7 +105,6 @@ define(function (require) {
       toy.editor.set("open", true);
 
       this.layout();
-      this.start();
     },
 
     layout: function () {
@@ -166,41 +165,45 @@ define(function (require) {
 
       // Render particle step pass
 
-      toy.fbo_write.bind();
+      if(toy.editor.program.linked) {
+        toy.fbo_write.bind();
 
-        toy.fbo_read.textures[0].bind(0);      // Position
-        toy.fbo_prev_read.textures[0].bind(1); // Previous position
-        toy.tex_index.bind(2);
-        toy.tex_eq_left.bind(3);
-        toy.tex_eq_right.bind(4);
+          toy.fbo_read.textures[0].bind(0);      // Position
+          toy.fbo_prev_read.textures[0].bind(1); // Previous position
+          toy.tex_index.bind(2);
+          toy.tex_eq_left.bind(3);
+          toy.tex_eq_right.bind(4);
 
-        toy.editor.program.use({
-          position:      0,
-          position_prev: 1,
-          index:         2,
-          amp_left:      3,
-          amp_right:     4,
-          resolution:    res,
-          count:         res * res,
-          mousePos:      this.mouse_pos,
-          cameraPos:     this.camera_pos,
-          time:          time,
-          frame:         this.frame_num,
-          progress:      toy.audio.get("progress")
-        });
+          toy.editor.program.use({
+            position:      0,
+            position_prev: 1,
+            index:         2,
+            amp_left:      3,
+            amp_right:     4,
+            resolution:    res,
+            count:         res * res,
+            mousePos:      this.mouse_pos,
+            cameraPos:     this.camera_pos,
+            time:          time,
+            frame:         this.frame_num,
+            progress:      toy.audio.get("progress")
+          });
 
-        toy.vbo_plane
-          .setProg(toy.editor.program)
-          .draw();
+          toy.vbo_plane
+            .setProg(toy.editor.program)
+            .draw();
 
-        toy.fbo_read.textures[0].unbind();
-        toy.fbo_prev_read.textures[0].unbind();
-        toy.tex_index.unbind();
-        toy.tex_eq_left.unbind();
-        toy.tex_eq_right.unbind();
+          toy.fbo_read.textures[0].unbind();
+          toy.fbo_prev_read.textures[0].unbind();
+          toy.tex_index.unbind();
+          toy.tex_eq_left.unbind();
+          toy.tex_eq_right.unbind();
 
-      toy.fbo_write.unbind();
-      toy.swap();
+        toy.fbo_write.unbind();
+        toy.swap();
+
+        this.frame_num++;
+      }
 
 
       // Render view pass
@@ -222,11 +225,6 @@ define(function (require) {
       toy.vbo_particles.draw();
 
       toy.fbo_read.textures[0].unbind();
-
-
-      // Increment frame number
-
-      this.frame_num++;
     }
 
   });

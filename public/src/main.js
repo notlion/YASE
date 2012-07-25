@@ -48,4 +48,5 @@ require([ "src/models/Toy", "src/views/ToyView", "glmatrix" ], function (Toy, To
   window.toy = new Toy();
   window.toyview = new ToyView({ model: window.toy });
   window.toy.start();
+  window.toyview.start();
 });
