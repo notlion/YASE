@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "express": "2.5.x",
-    "ejs": "0.7.x",
-    "requirejs": "2.0.x"
+    "ejs": "0.8.x",
+    "requirejs": "2.x.x"
   },
   "name": "particle-shadertoy"
 }
