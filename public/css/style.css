@@ -307,44 +307,50 @@ body {
 
 div.help-overlay {
   position: absolute;
-  left: 30px;
-  right: 30px;
-  top: 54px;
-  bottom: 30px;
-  border-radius: 5px;
-  padding: 20px;
-  background: #1a1a1a;
-  font-family: sans-serif;
-  font-size: 14px;
-  color: #bbb;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 12px;
-  box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 12px; }
-  div.help-overlay > svg.close {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%; }
+  div.help-overlay > div.box {
     position: absolute;
-    left: 5px;
-    top: 5px;
-    stroke: #111;
-    stroke-width: 2px;
-    cursor: pointer; }
-    div.help-overlay > svg.close:hover {
-      stroke: #000; }
-  div.help-overlay > div.scroll {
-    height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto; }
-    div.help-overlay > div.scroll > div {
-      width: 50%; }
-      div.help-overlay > div.scroll > div.function {
-        float: left; }
-      div.help-overlay > div.scroll > div.variable, div.help-overlay > div.scroll > div.define {
-        float: right;
-        clear: right; }
-      div.help-overlay > div.scroll > div > section {
-        display: block;
-        margin: 0 0 15px;
-        padding: 0 20px 0 20px; }
-      div.help-overlay > div.scroll > div > h1 {
-        padding: 0 20px 0 16px; }
+    left: 30px;
+    right: 30px;
+    top: 54px;
+    bottom: 30px;
+    border-radius: 5px;
+    padding: 20px;
+    background: #1a1a1a;
+    font-family: sans-serif;
+    font-size: 14px;
+    color: #bbb;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 12px;
+    box-shadow: rgba(0, 0, 0, 0.5) 0px 0px 12px; }
+    div.help-overlay > div.box > svg.close {
+      position: absolute;
+      left: 5px;
+      top: 5px;
+      stroke: #111;
+      stroke-width: 2px;
+      cursor: pointer; }
+      div.help-overlay > div.box > svg.close:hover {
+        stroke: #000; }
+    div.help-overlay > div.box > div.scroll {
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto; }
+      div.help-overlay > div.box > div.scroll > div {
+        width: 50%; }
+        div.help-overlay > div.box > div.scroll > div.function {
+          float: left; }
+        div.help-overlay > div.box > div.scroll > div.variable, div.help-overlay > div.box > div.scroll > div.define {
+          float: right;
+          clear: right; }
+        div.help-overlay > div.box > div.scroll > div > section {
+          display: block;
+          margin: 0 0 15px;
+          padding: 0 20px 0 20px; }
+        div.help-overlay > div.box > div.scroll > div > h1 {
+          padding: 0 20px 0 16px; }
   div.help-overlay h1 {
     color: #444;
     font-size: 20px;

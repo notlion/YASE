@@ -56,10 +56,16 @@ define(function (require) {
 
       this.$el.html(help_template({ contents: groups }));
 
-      this.$el.find(".close").on("click", function (e) {
+      function onClick (e) {
         e.preventDefault();
         self.model.set("open", false);
+      }
+
+      this.$el.on("click", function (e) {
+        if(e.target === self.el)
+          onClick(e);
       });
+      this.$el.find(".close").on("click", onClick);
     }
 
   });
