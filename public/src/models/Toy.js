@@ -8,8 +8,9 @@ define(function (require) {
 
     , Params = require("src/params")
 
-    , ProgEditor = require("src/models/ProgEditor")
-    , Soundcloud = require("src/models/Soundcloud")
+    , ProgEditor  = require("src/models/ProgEditor")
+    , HelpOverlay = require("src/models/HelpOverlay")
+    , Soundcloud  = require("src/models/Soundcloud")
 
     , src_copy_vertex    = require("text!template/copy.vsh")
     , src_copy_fragment  = require("text!template/copy.fsh")
@@ -35,12 +36,22 @@ define(function (require) {
         src_vertex: src_step_vertex,
         src_fragment_template: src_step_template
       });
-      this.editor.buttons.add({
-        name: "save",
-        title: "Save",
-        hides_when_closed: true
-      });
+      this.editor.buttons.add([
+        {
+          name: "save",
+          title: "Save",
+          hides_when_closed: true
+        },
+        {
+          name: "help",
+          title: "?",
+          hides_when_closed: true
+        }
+      ]);
 
+      this.help = new HelpOverlay({
+        src: src_step_template
+      });
       this.audio = new Soundcloud();
 
 
@@ -74,6 +85,9 @@ define(function (require) {
         });
 
       this.editor.buttons.get("save").on("click", this.saveParams, this);
+      this.editor.buttons.get("help").on("click", function () {
+        self.help.set("open", true);
+      });
     },
 
     initGL: function () {

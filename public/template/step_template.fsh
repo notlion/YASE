@@ -17,6 +17,9 @@ vec4 taylorInvSqrt(in vec4 r) {
   return 1.79284291400159 - 0.85373472095314 * r;
 }
 
+/**
+3-dimensional simplex noise
+*/
 float noise(in vec3 v) {
   const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0) ;
   const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
@@ -81,26 +84,60 @@ float noise(in float x, in float y, in float z) {
 // YASE Specific
 
 uniform sampler2D position, position_prev, index, amp_left, amp_right;
-uniform vec3 cameraPos, mousePos;
-uniform float time, frame, resolution, count, progress;
 
+/** Camera Position */
+uniform vec3 cameraPos;
+
+/** Mouse Position */
+uniform vec3 mousePos;
+
+/** Seconds since the page was loaded or a track was played */
+uniform float time;
+
+/** Current frame number */
+uniform float frame;
+
+/** Vertical and horizontal dimension of the simulation’s backing framebuffer */
+uniform float resolution;
+
+/** Total number of particles */
+uniform float count;
+
+/** Position in the currently playing track [0, 1] if there is one */
+uniform float progress;
+
+/** Coordinate of the currently rendering fragment */
 varying vec2 texcoord;
 
+/**
+Circle diameter over circumference.
+*/
 #define PI 3.141592653589793
-#define TWOPI 6.283185307179586
 
+/**
+Amplitude of the left channel at frequency {x} [0, 1]
+*/
 float ampLeft(in float x) {
   return texture2D(amp_left, vec2(x, 0.)).x;
 }
+/**
+Amplitude of the left channel at frequency {x} [0, 1]
+*/
 float ampRight(in float x) {
   return texture2D(amp_right, vec2(x, 0.)).x;
 }
 
+/**
+Get the current position of a particle at {t} (index / count)
+*/
 vec4 getPos(in float t) {
   float tr = t * resolution;
   return texture2D(position, vec2(fract(tr), floor(tr) / resolution));
 }
 
+/**
+Pseudo-random value [0, 1] at vec2 {p}, {x, y}, or {x}
+*/
 float rand(in vec2 p) {
   return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
 }
@@ -111,6 +148,9 @@ float rand(in float x) {
   return rand(vec2(x, 0.));
 }
 
+/**
+Pseudo-random point on the unit-sphere
+*/
 vec3 rand3(in vec2 p) {
   float phi = rand(p) * PI * 2.;
   float ct = rand(p.yx) * 2. - 1.;

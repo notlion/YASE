@@ -9,7 +9,8 @@ define(function (require) {
     , utils   = require("src/utils")
     , Arcball = require("src/Arcball")
 
-    , ProgEditorView = require("src/views/ProgEditorView");
+    , ProgEditorView  = require("src/views/ProgEditorView")
+    , HelpOverlayView = require("src/views/HelpOverlayView");
 
   window.Embr = Embr;
 
@@ -28,14 +29,11 @@ define(function (require) {
       this.el.addEventListener("webglcontextlost", function (e) {
         e.preventDefault();
         self.stop();
-        console.log("Context Lost :(");
       }, false);
       this.el.addEventListener("webglcontextrestored", function (e) {
-        // toy.set("context", utils.getWebGLContext(this.el));
         toy.initGL();
         toy.editor.compile();
         self.start();
-        console.log("Context Restored :)");
       }, false);
 
       toy.set("context", utils.getWebGLContext(this.el));
@@ -56,6 +54,9 @@ define(function (require) {
 
       this.editor_view = new ProgEditorView({ model: toy.editor });
       this.editor_view.$el.appendTo(document.body);
+
+      this.help_view = new HelpOverlayView({ model: toy.help });
+      this.help_view.$el.appendTo(document.body);
 
 
       // Assign event listeners
