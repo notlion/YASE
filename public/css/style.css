@@ -276,7 +276,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
     transition-timing-function: ease-out;
     -webkit-box-shadow: inset rgba(0, 0, 0, 0.5) 0px 0px 6px;
     box-shadow: inset rgba(0, 0, 0, 0.5) 0px 0px 6px;
-    background-color: rgba(24, 28, 22, 0.8); }
+    background-color: rgba(26, 28, 24, 0.8); }
   #prog-editor .CodeMirror .error {
     color: #f00; }
 #prog-editor .CodeMirror-scroll {
@@ -319,7 +319,7 @@ div.help-overlay {
     bottom: 30px;
     border-radius: 5px;
     padding: 20px;
-    background: #1a1a1a;
+    background: #1e1e1d;
     font-family: sans-serif;
     font-size: 14px;
     color: #bbb;
@@ -350,7 +350,7 @@ div.help-overlay {
           margin: 0 0 15px;
           padding: 0 20px 0 20px; }
         div.help-overlay > div.box > div.scroll > div > h1 {
-          padding: 0 20px 0 16px; }
+          padding: 0 20px 0 18px; }
   div.help-overlay h1 {
     color: #444;
     font-size: 20px;
@@ -361,7 +361,7 @@ div.help-overlay {
     margin: 0 0 8px 0; }
   div.help-overlay code {
     display: inline-block;
-    background: #121212;
+    background: #121211;
     padding: 6px 8px 8px 8px;
     border-radius: 3px;
     font-family: monospace;

@@ -33,7 +33,7 @@ define(function (require) {
           self.$el.show();
       });
 
-      this.$el.hide();
+      this.$el.hide().css({ opacity: 0 });
 
       this.render();
     },

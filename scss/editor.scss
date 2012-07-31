@@ -63,7 +63,7 @@
       @include transition-duration(0.1s);
       @include transition-timing-function(ease-out);
       @include box-shadow(inset rgba(0, 0, 0, 0.5) 0px 0px 6px);
-      background-color: rgba(24, 28, 22, 0.8);
+      background-color: rgba(26, 28, 24, 0.8);
     }
 
     & .error {

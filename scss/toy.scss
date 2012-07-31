@@ -29,7 +29,7 @@ div.help-overlay {
     left: 30px; right: 30px; top: 54px; bottom: 30px;
     border-radius: 5px;
     padding: 20px;
-    background: #1a1a1a;
+    background: #1e1e1d;
     font-family: sans-serif;
     font-size: 14px;
     color: #bbb;
@@ -70,7 +70,7 @@ div.help-overlay {
           padding: 0 20px 0 20px;
         }
         & > h1 {
-          padding: 0 20px 0 16px;
+          padding: 0 20px 0 18px;
         }
       }
     }
@@ -90,7 +90,7 @@ div.help-overlay {
 
   & code {
     display: inline-block;
-    background: #121212;
+    background: #121211;
     padding: 6px 8px 8px 8px;
     border-radius: 3px;
     font-family: monospace;
