@@ -88,6 +88,10 @@ define(function (require) {
       this.editor.buttons.get("help").on("click", function () {
         self.help.set("open", true);
       });
+
+      this.help.on("change:open", function (help, open) {
+        self.editor.buttons.get("help").set("enabled", !open);
+      });
     },
 
     initGL: function () {
@@ -110,6 +114,7 @@ define(function (require) {
       // Generate texture data
 
       var n = res * res
+        , r1 = res - 1
         , index_data    = new Float32Array(n)
         , texcoord_data = new Float32Array(n * 2)
         , position_data = new Float32Array(n * 4)
@@ -117,9 +122,9 @@ define(function (require) {
 
       for(i = 0; i < texcoord_data.length; ++i) {
         i2 = i * 2; i4 = i * 4;
-        index_data[i] = i / n;
-        texcoord_data[i2    ] = (i % res) / res;
-        texcoord_data[i2 + 1] = Math.floor(i / res) / res;
+        index_data[i] = i;
+        texcoord_data[i2    ] = (i % res) / r1;
+        texcoord_data[i2 + 1] = Math.floor(i / res) / r1;
         position_data[i4    ] = texcoord_data[i2    ] - 0.5;
         position_data[i4 + 1] = texcoord_data[i2 + 1] - 0.5;
         position_data[i4 + 3] = 1;

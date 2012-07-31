@@ -130,9 +130,9 @@ float ampRight(in float x) {
 /**
 Get the current position of a particle at {t} (index / count)
 */
-vec4 getPos(in float t) {
-  float tr = t * resolution;
-  return texture2D(position, vec2(fract(tr), floor(tr) / resolution));
+vec4 getPos(in float i) {
+  vec2 tc = vec2(mod(i, resolution), floor(i / resolution));
+  return texture2D(position, tc / (resolution - 1.));
 }
 
 /**
@@ -167,8 +167,8 @@ vec3 rand3(in float x) {
 <%= src_fragment %>
 
 void main() {
-  vec4 t = texture2D(index, texcoord)
+  vec4 i = texture2D(index, texcoord)
      , p = texture2D(position, texcoord)
      , pp = texture2D(position_prev, texcoord);
-  stepPos(t.r, pp, p, gl_FragColor);
+  stepPos(i.x, pp, p, gl_FragColor);
 }
