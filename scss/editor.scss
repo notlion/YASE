@@ -28,6 +28,10 @@
     & svg {
       fill: #000; stroke: #fff; stroke-width: 2px;
       cursor: pointer;
+
+      &:hover {
+        fill: #025;
+      }
     }
 
     & input {
@@ -41,6 +45,10 @@
       font-size: 14px;
       font-weight: bold;
       cursor: pointer;
+
+      &:hover {
+        background: #025;
+      }
     }
   }
 

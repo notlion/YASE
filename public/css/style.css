@@ -236,6 +236,8 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
     stroke: #fff;
     stroke-width: 2px;
     cursor: pointer; }
+    #prog-editor .ui svg:hover {
+      fill: #025; }
   #prog-editor .ui input {
     background: #000;
     color: #fff;
@@ -247,6 +249,8 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {
     font-size: 14px;
     font-weight: bold;
     cursor: pointer; }
+    #prog-editor .ui input:hover {
+      background: #025; }
 #prog-editor .CodeMirror {
   position: absolute;
   left: 30px;
