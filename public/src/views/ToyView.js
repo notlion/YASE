@@ -182,6 +182,7 @@ define(function (require) {
             amp_left:      3,
             amp_right:     4,
             resolution:    res,
+            oneOverRes:    1.0 / res,
             count:         res * res,
             mousePos:      this.mouse_pos,
             cameraPos:     this.camera_pos,
