@@ -103,8 +103,6 @@ define(function (require) {
       // Start
 
       toy.editor.compile();
-      toy.editor.set("open", true);
-
       this.layout();
     },
 
