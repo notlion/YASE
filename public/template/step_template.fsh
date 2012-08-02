@@ -142,6 +142,9 @@ Get the current position of a particle at index {i}
 vec4 getPos(in float i) {
   return texture2D(position, getCoord(i) * oneOverRes);
 }
+vec4 getPos(in int i) {
+  return getPos(float(i));
+}
 
 /**
 Pseudo-random value [0, 1] at vec2 {p}, {x, y}, or {x}

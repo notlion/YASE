@@ -38,6 +38,9 @@ define(function (require) {
 
       this.model.on("change", this.render, this);
 
+      if(this.model.get("hides_when_closed"))
+        this.$el.hide();
+
       this.render();
     },
 
