@@ -62,7 +62,7 @@ app.get("/count", function(req, res){
 });
 
 
-app.get("/short/:short_id",function(req, res){
+app.get("/s/:short_id",function(req, res){
   Shader.findOne({ short_id : req.params.short_id }, function(err, shader){
     if (err) {
       res.send("Error finding shader with short_id: " + req.params.short_id);
@@ -94,7 +94,9 @@ app.post("/save", function(req, res){
   var saveShader = function(iteration, callback) {
     var newShader = new Shader({
       short_id : generateID(iteration),
-      code_lzma : req.body.code_lzma
+      r : req.body.r,
+      d : req.body.d,
+      z : req.body.z
     });
     newShader.save(function (err) {
       if (err !== null && err.code === 11000) {
