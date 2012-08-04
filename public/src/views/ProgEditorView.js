@@ -63,6 +63,8 @@ define(function (require) {
         });
 
       this.render();
+
+      self.$el.find(".code-container, .hides-when-closed").hide();
     },
 
     toggleOpen: function () {

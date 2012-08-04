@@ -99,6 +99,7 @@ uniform float frame;
 
 /** Vertical and horizontal dimension of the simulation’s backing framebuffer */
 uniform float resolution;
+uniform float oneOverRes;
 
 /** Total number of particles */
 uniform float count;
@@ -128,11 +129,21 @@ float ampRight(in float x) {
 }
 
 /**
-Get the current position of a particle at {t} (index / count)
+Get the un-normalized texture coordinate for particle at index {i}
+*/
+vec2 getCoord(in float i) {
+  float y = floor(i * oneOverRes);
+  return vec2(i - resolution * y, y) + .5;
+}
+
+/**
+Get the current position of a particle at index {i}
 */
 vec4 getPos(in float i) {
-  vec2 tc = vec2(mod(i, resolution), floor(i / resolution));
-  return texture2D(position, tc / (resolution - 1.));
+  return texture2D(position, getCoord(i) * oneOverRes);
+}
+vec4 getPos(in int i) {
+  return getPos(float(i));
 }
 
 /**
