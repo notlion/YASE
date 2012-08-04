@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "express": "2.5.x",
+    "mongoose": "2.5.x",
     "ejs": "0.8.x",
     "requirejs": "2.x.x"
   },
