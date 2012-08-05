@@ -74,7 +74,8 @@ define(function (require) {
         })
         .on("change:src_fragment", function (editor) {
           self.setSaved(false);
-        });
+        })
+        .on("save", this.saveParams, this);
 
       this
         .on("change:context change:fbo_res", function () {
@@ -84,7 +85,7 @@ define(function (require) {
           self.setSaved(false);
         });
 
-      this.editor.buttons.get("save").on("click", this.saveParams, this);
+      this.editor.buttons.get("save").on("click", this.editor.save, this.editor);
       this.editor.buttons.get("help").on("click", function () {
         self.help.set("open", true);
       });

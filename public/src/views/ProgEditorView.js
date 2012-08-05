@@ -62,6 +62,22 @@ define(function (require) {
             self.cm_code.setValue(src);
         });
 
+      // Create key map
+      function cmSave(cm) {
+        self.model.save();
+      }
+      function cmToggleOpen(cm) {
+        self.toggleOpen();
+      }
+
+      CodeMirror.keyMap.yase = {
+        "Cmd-S": cmSave,
+        "Ctrl-S": cmSave,
+        "Cmd-`": cmToggleOpen,
+        "Ctrl-`": cmToggleOpen,
+        fallthrough: [ "default" ]
+      };
+
       this.render();
 
       self.$el.find(".code-container, .hides-when-closed").hide();
@@ -106,6 +122,7 @@ define(function (require) {
       this.cm_code = new CodeMirror(container, {
         value: this.model.get("src_fragment"),
         mode: "text/x-glsl",
+        keyMap: "yase",
         dragDrop: false,
         tabSize: 2,
         autoClearEmptyLines: true,

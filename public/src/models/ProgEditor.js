@@ -123,7 +123,11 @@ define(function (require) {
         this.set("compiled", true);
         this.trigger("compile", this.program);
       }
-    }, 200)
+    }, 200),
+
+    save: function () {
+      this.trigger("save", this);
+    }
 
   });
 
