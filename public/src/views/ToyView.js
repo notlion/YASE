@@ -90,6 +90,7 @@ define(function (require) {
       // Init Mouse
 
       this.mouse_pos = vec3.create();
+      this.mouse_pos_3d = vec3.create();
 
       $(document).on("mousemove", function (e) {
         self.mouse_pos[0] = e.clientX / self.el.clientWidth;
@@ -131,17 +132,21 @@ define(function (require) {
       var gl = Embr.gl
         , toy = this.model
         , time = (Date.now() - this.start_time) / 1000
-        , res = toy.get("fbo_res");
-
+        , res = toy.get("fbo_res")
+        , clip_near = 0.1
+        , clip_far = 100.0
+        , fov = 60.0;
 
       this.arcball.getModelView(this.modelview);
-      mat4.perspective(60, this.aspect, 0.01, 100.0, this.projection);
+      mat4.perspective(fov, this.aspect, clip_near, clip_far, this.projection);
       mat4.multiply(this.projection, this.modelview, this.mvp);
 
       vec3.set([ 0, 0, 0 ], this.camera_pos);
       mat4.inverse(this.modelview, this.modelview_inv);
       mat4.multiplyVec3(this.modelview_inv, this.camera_pos);
 
+      this.mouse_pos[2] = util.distanceToDepth(this.arcball.getDistance(), clip_near, clip_far);
+      vec3.unproject(this.mouse_pos, this.modelview, this.projection, [ 0, 0, 1, 1 ], this.mouse_pos_3d);
 
       gl.viewport(0, 0, res, res);
       gl.disable(gl.DEPTH_TEST);
@@ -182,7 +187,7 @@ define(function (require) {
             resolution:    res,
             oneOverRes:    1.0 / res,
             count:         res * res,
-            mousePos:      this.mouse_pos,
+            mousePos:      this.mouse_pos_3d,
             cameraPos:     this.camera_pos,
             time:          time,
             frame:         this.frame_num,

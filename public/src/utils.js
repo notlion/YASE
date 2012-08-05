@@ -4,8 +4,14 @@ define(function () {
 
   var utils = {};
 
+  // var deg_to_rad = Math.PI / 180.0;
+
   utils.clamp = function (v, min, max) {
     return v < min ? min : (v > max ? max : v);
+  };
+
+  utils.distanceToDepth = function (z, znear, zfar) {
+    return (znear * z + zfar * (-znear + z)) / ((zfar - znear) * z);
   };
 
   var vendors = [ "ms", "moz", "webkit", "o" ];
