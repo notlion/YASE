@@ -145,7 +145,7 @@ define(function (require) {
       mat4.inverse(this.modelview, this.modelview_inv);
       mat4.multiplyVec3(this.modelview_inv, this.camera_pos);
 
-      this.mouse_pos[2] = util.distanceToDepth(this.arcball.getDistance(), clip_near, clip_far);
+      this.mouse_pos[2] = utils.distanceToDepth(this.arcball.getDistance(), clip_near, clip_far);
       vec3.unproject(this.mouse_pos, this.modelview, this.projection, [ 0, 0, 1, 1 ], this.mouse_pos_3d);
 
       gl.viewport(0, 0, res, res);
