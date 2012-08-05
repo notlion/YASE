@@ -90,7 +90,9 @@ define(function (require) {
       // Init Mouse
 
       this.mouse_pos = vec3.create();
-      this.mouse_pos_3d = vec3.create();
+      this.mouse_pos_prev = vec3.create();
+      this.mouse_world_pos = vec3.create();
+      this.mouse_world_pos_prev = vec3.create();
 
       $(document).on("mousemove", function (e) {
         self.mouse_pos[0] = e.clientX / self.el.clientWidth;
@@ -145,8 +147,11 @@ define(function (require) {
       mat4.inverse(this.modelview, this.modelview_inv);
       mat4.multiplyVec3(this.modelview_inv, this.camera_pos);
 
+      vec3.set(this.mouse_pos, this.mouse_pos_prev);
+      vec3.set(this.mouse_world_pos, this.mouse_world_pos_prev);
+
       this.mouse_pos[2] = utils.distanceToDepth(this.arcball.getDistance(), clip_near, clip_far);
-      vec3.unproject(this.mouse_pos, this.modelview, this.projection, [ 0, 0, 1, 1 ], this.mouse_pos_3d);
+      vec3.unproject(this.mouse_pos, this.modelview, this.projection, [ 0, 0, 1, 1 ], this.mouse_world_pos);
 
       gl.viewport(0, 0, res, res);
       gl.disable(gl.DEPTH_TEST);
@@ -179,19 +184,22 @@ define(function (require) {
           toy.tex_eq_right.bind(4);
 
           toy.editor.program.use({
-            position:      0,
-            position_prev: 1,
-            index:         2,
-            amp_left:      3,
-            amp_right:     4,
-            resolution:    res,
-            oneOverRes:    1.0 / res,
-            count:         res * res,
-            mousePos:      this.mouse_pos_3d,
-            cameraPos:     this.camera_pos,
-            time:          time,
-            frame:         this.frame_num,
-            progress:      toy.audio.get("progress")
+            position:           0,
+            position_prev:      1,
+            index:              2,
+            amp_left:           3,
+            amp_right:          4,
+            resolution:         res,
+            oneOverRes:         1.0 / res,
+            count:              res * res,
+            mousePos:           this.mouse_world_pos,
+            prevMousePos:       this.mouse_world_pos_prev,
+            screenMousePos:     this.mouse_pos,
+            prevScreenMousePos: this.mouse_pos_prev,
+            cameraPos:          this.camera_pos,
+            time:               time,
+            frame:              this.frame_num,
+            progress:           toy.audio.get("progress")
           });
 
           toy.vbo_plane

@@ -85,11 +85,16 @@ float noise(in float x, in float y, in float z) {
 
 uniform sampler2D position, position_prev, index, amp_left, amp_right;
 
-/** Camera Position */
+/** Camera position */
 uniform vec3 cameraPos;
 
-/** Mouse Position */
+/** Current and previous mouse positions in world space */
 uniform vec3 mousePos;
+uniform vec3 prevMousePos;
+
+/** Current and previous mouse positions [0, 1] in screen space */
+uniform vec3 screenMousePos;
+uniform vec3 prevScreenMousePos;
 
 /** Seconds since the page was loaded or a track was played */
 uniform float time;
@@ -144,6 +149,16 @@ vec4 getPos(in float i) {
 }
 vec4 getPos(in int i) {
   return getPos(float(i));
+}
+
+/**
+Get the previous position of a particle at index {i}
+*/
+vec4 getPrevPos(in float i) {
+  return texture2D(position_prev, getCoord(i) * oneOverRes);
+}
+vec4 getPrevPos(in int i) {
+  return getPrevPos(float(i));
 }
 
 /**
