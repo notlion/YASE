@@ -101,7 +101,7 @@ define(function (require) {
 
       Embr.setContext(gl);
 
-      if(!gl.getExtension("OES_texture_float"))
+      if(!(this.ext_oes_float = gl.getExtension("OES_texture_float")))
         throw "Float textures not supported :("
 
       this.prog_copy = new Embr.Program(src_copy_vertex, src_copy_fragment)
