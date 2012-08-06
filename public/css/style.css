@@ -323,7 +323,7 @@ div.help-overlay {
     bottom: 30px;
     border-radius: 5px;
     padding: 20px;
-    background: #1e1e1d;
+    background: #2a2a29;
     font-family: sans-serif;
     font-size: 14px;
     color: #bbb;
@@ -356,7 +356,7 @@ div.help-overlay {
         div.help-overlay > div.box > div.scroll > div > h1 {
           padding: 0 20px 0 18px; }
   div.help-overlay h1 {
-    color: #444;
+    color: #666;
     font-size: 20px;
     font-weight: normal;
     text-transform: capitalize;
