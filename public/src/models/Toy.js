@@ -4,6 +4,7 @@ define(function (require) {
 
   var Backbone = require("backbone")
     , _        = require("underscore")
+    , $        = require("zepto")
     , Embr     = require("embr")
 
     , Params = require("src/params")
@@ -241,7 +242,7 @@ define(function (require) {
       });
     },
 
-    saveShaderToDB: function () {
+    getParams: function (callback) {
       var self = this;
       Params.lzmaCompress(this.editor.get("src_fragment"), 1, function (res) {
         var params = {};
@@ -250,21 +251,21 @@ define(function (require) {
         if(self.has("distance"))
           params.d = self.get("distance");
         params.z = res;
-        $.post('/save', params, function(response){
-         console.log(response);
+        callback(params);
+      });
+    },
+
+    saveShaderToDB: function () {
+      this.getParams(function (params) {
+        $.post("/save", params, function(res) {
+          console.log(res);
         });
       });
     },
 
     saveParams: function () {
       var self = this;
-      Params.lzmaCompress(this.editor.get("src_fragment"), 1, function (res) {
-        var params = {};
-        if(self.has("rotation"))
-          params.r = self.get("rotation");
-        if(self.has("distance"))
-          params.d = self.get("distance");
-        params.z = res;
+      this.getParams(function (params) {
         window.location.hash = Params.stringify(params, 3);
         self.setSaved(true);
       });
