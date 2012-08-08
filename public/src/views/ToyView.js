@@ -10,7 +10,8 @@ define(function (require) {
     , Arcball = require("src/Arcball")
 
     , ProgEditorView  = require("src/views/ProgEditorView")
-    , HelpOverlayView = require("src/views/HelpOverlayView");
+    , HelpOverlayView = require("src/views/HelpOverlayView")
+    , LinkOverlayView = require("src/views/LinkOverlayView");
 
   window.Embr = Embr;
 
@@ -57,6 +58,8 @@ define(function (require) {
 
       this.help_view = new HelpOverlayView({ model: toy.help });
       this.help_view.$el.appendTo(document.body);
+
+      this.link_view = new LinkOverlayView({ model: toy.link });
 
 
       // Assign event listeners

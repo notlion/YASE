@@ -44,8 +44,8 @@ define(function (require) {
           hides_when_closed: true
         },
         {
-          name: "link",
-          title: "Get Link",
+          name: "share",
+          title: "Share",
           hides_when_closed: true
         },
         {
@@ -58,6 +58,9 @@ define(function (require) {
       this.help = new HelpOverlay({
         src: src_step_template
       });
+
+      this.link = new Backbone.Model({ open: false });
+
       this.audio = new Soundcloud();
 
 
@@ -92,7 +95,7 @@ define(function (require) {
         });
 
       this.editor.buttons.get("save").on("click", this.editor.save, this.editor);
-      this.editor.buttons.get("link").on("click", this.saveParamsLink, this);
+      this.editor.buttons.get("share").on("click", this.saveParamsLink, this);
       this.editor.buttons.get("help").on("click", function () {
         self.help.set("open", true);
       });
@@ -111,10 +114,8 @@ define(function (require) {
       if(!(this.ext_oes_float = gl.getExtension("OES_texture_float")))
         throw "Float textures not supported :("
 
-      this.prog_copy = new Embr.Program(src_copy_vertex, src_copy_fragment)
-        .link();
-      this.prog_final = new Embr.Program(src_final_vertex, src_final_fragment)
-        .link();
+      this.prog_copy = new Embr.Program(src_copy_vertex, src_copy_fragment).link();
+      this.prog_final = new Embr.Program(src_final_vertex, src_final_fragment).link();
 
       var res = this.get("fbo_res");
 
@@ -241,7 +242,7 @@ define(function (require) {
         enabled: !saved
       });
       if(!saved)
-        this.editor.buttons.get("link").set("enabled", true);
+        this.editor.buttons.get("share").set("enabled", true);
     },
 
     getParams: function (callback) {
@@ -261,8 +262,9 @@ define(function (require) {
       var self = this;
       this.getParams(function (params) {
         $.post("/save", params, function(res) {
-          console.log(res);
-          self.editor.buttons.get("link").set("enabled", false);
+          self.editor.buttons.get("share").set("enabled", false);
+          self.link.set(JSON.parse(res));
+          self.link.set("open", true);
         });
       });
     },

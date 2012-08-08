@@ -19,7 +19,7 @@ define(function (require) {
   var HelpOverlayView = Backbone.View.extend({
 
     tagName: "div",
-    className: "help-overlay",
+    className: "overlay help",
 
     initialize: function () {
       var self = this;
@@ -62,8 +62,7 @@ define(function (require) {
       }
 
       this.$el.on("click", function (e) {
-        if(e.target === self.el)
-          onClick(e);
+        if(e.target === self.el) onClick(e);
       });
       this.$el.find(".close").on("click", onClick);
     }
