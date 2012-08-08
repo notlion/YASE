@@ -29,10 +29,6 @@ app.get("/", function(req, res) {
   res.render("index", { env: app.settings.env, layout: false });
 });
 
-app.get("/:short_id", function(req, res) {
-  res.render("index", { env: app.settings.env, layout: false });
-});
-
 
 app.get("/get", function(req, res) {
 

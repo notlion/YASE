@@ -261,10 +261,16 @@ define(function (require) {
     saveParamsLink: function () {
       var self = this;
       this.getParams(function (params) {
-        $.post("/save", params, function(res) {
-          self.editor.buttons.get("share").set("enabled", false);
-          self.link.set(JSON.parse(res));
-          self.link.set("open", true);
+        $.ajax({
+          url: "/save",
+          type: "post",
+          data: params,
+          dataType: "json",
+          success: function(res) {
+            self.editor.buttons.get("share").set("enabled", false);
+            self.link.set(res);
+            self.link.set("open", true);
+          }
         });
       });
     },
@@ -277,8 +283,7 @@ define(function (require) {
       });
     },
 
-    loadParams: function (callback) {
-      var params = Params.parse(window.location.hash);
+    loadParams: function (params, callback) {
       if(params.z) {
         Params.lzmaDecompress(params.z, function (res) {
           params.z = res;
@@ -290,13 +295,34 @@ define(function (require) {
       }
     },
 
+    loadHashParams: function (callback) {
+      var self = this, hash = window.location.hash;
+
+      if(hash.length === 0) {
+        callback({});
+        return;
+      }
+
+      if(hash.indexOf("=") >= 0)
+        this.loadParams(Params.parse(hash), callback);
+      else
+        $.ajax({
+          url: "/get/" + hash.slice(1),
+          type: "get",
+          dataType: "json",
+          success: function(res) {
+            self.loadParams(res, callback)
+          }
+        });
+    },
+
     start: function () {
       var self = this;
-      this.loadParams(function (params) {
+      this.loadHashParams(function (params) {
         if(params.r instanceof Array && params.r.length === 4) {
           self.set("rotation", params.r);
         }
-        if(!isNaN(params.d))
+        if(_.isNumber(params.d))
           self.set("distance", +params.d);
         if(params.z)
           self.editor.set("src_fragment", params.z);
