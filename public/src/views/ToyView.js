@@ -49,6 +49,10 @@ define(function (require) {
 
       this.arcball = new Arcball(this.el);
 
+      var sc = 10.0;
+      mat4.ortho(-sc, sc, -sc, sc, -sc sc, this.projection_light);
+      this.modelview_light = mat4.create();
+
 
       // Init Subviews
 
@@ -217,6 +221,17 @@ define(function (require) {
 
         this.frame_num++;
       }
+
+
+      // Render shadow pass
+
+      toy.fbo_shadow_depth.bind();
+
+        toy.prog_depth.use({
+
+        });
+
+      toy.fbo_shadow_depth.unbind();
 
 
       // Render view pass

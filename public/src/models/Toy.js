@@ -18,6 +18,8 @@ define(function (require) {
     , src_step_fragment  = require("text!template/step.fsh")
     , src_final_vertex   = require("text!template/final.vsh")
     , src_final_fragment = require("text!template/final.fsh")
+    , src_depth_vertex   = require("text!template/depth.vsh")
+    , src_depth_fragment = require("text!template/depth.fsh")
     , src_step_template  = require("text!template/step_template.fsh");
 
 
@@ -25,6 +27,7 @@ define(function (require) {
 
     defaults: {
       fbo_res: 512,
+      fbo_res_shadow: 512,
       rotation: null,
       distance: null
     },
@@ -103,13 +106,18 @@ define(function (require) {
 
       if(!(this.ext_oes_float = gl.getExtension("OES_texture_float")))
         throw "Float textures not supported :("
+        // TODO: Implement some better UI to notify this happened.
 
-      this.prog_copy = new Embr.Program(src_copy_vertex, src_copy_fragment)
-        .link();
-      this.prog_final = new Embr.Program(src_final_vertex, src_final_fragment)
-        .link();
+
+      // Create shader programs
+
+      this.prog_copy = new Embr.Program(src_copy_vertex, src_copy_fragment).link();
+      this.prog_final = new Embr.Program(src_final_vertex, src_final_fragment).link();
+      this.prog_depth = new Embr.Program(src_depth_vertex, src_depth_fragment).link();
+
 
       var res = this.get("fbo_res");
+      var res_shadow = this.get("fbo_res_shadow");
 
 
       // Generate texture data
@@ -131,7 +139,7 @@ define(function (require) {
       }
 
 
-      // Create framebuffers
+      // Create step framebuffers
 
       var fbo_fmt = { width: res, height: res, type: gl.FLOAT }
         , fbo_fmt_position = _.extend(fbo_fmt, { data: position_data });
@@ -154,6 +162,16 @@ define(function (require) {
         .check();
       this.fbo_prev_write = new Embr.Fbo()
         .attach(new Embr.Texture(fbo_fmt_position))
+        .check();
+
+
+      // Create shadow framebuffer
+
+      this.fbo_shadow_depth = new Embr.Fbo()
+        .attach(new Embr.Texture({
+          width: res_shadow, height: res_shadow, type: gl.FLOAT, data: null
+        }))
+        .attach(new Embr.Rbo({ width: res_shadow, height: res_shadow }))
         .check();
 
 
