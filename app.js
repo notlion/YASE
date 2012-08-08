@@ -26,6 +26,7 @@ app.get("/", function (req, res) {
   res.render("index", { env: app.settings.env, layout: false });
 });
 
+
 app.get("/get", function (req, res) {
   var offset = req.query["offset"] ? parseInt(req.query["offset"]) : 0;
   var limit  = req.query["limit"] ? parseInt(req.query["limit"])  : 25;
@@ -36,6 +37,7 @@ app.get("/get", function (req, res) {
         var result = [];
         for(var i = 0; i < rows.length; i++) {
           result[i] = rows[i];
+          // convert .r to array by splitting on commas
           result[i].r = rows[i].r.split(",");
         }
         res.json({
@@ -52,6 +54,7 @@ app.get("/get", function (req, res) {
   );
 });
 
+
 app.get("/get/:short_id",function(req, res){
   db.query("SELECT * FROM shaders WHERE short_id = ?", req.params.short_id,
     function(err, results) {
@@ -60,6 +63,7 @@ app.get("/get/:short_id",function(req, res){
       } else {
         var result = results[0];
         if (result) {
+          // convert .r to array by splitting on commas
           result.r = result.r.split(",");
           res.json({
             status : "OK",
@@ -102,6 +106,7 @@ app.post("/save", function(req, res) {
     var short_id = generateID(iteration);
     db.query('INSERT INTO shaders SET ?',
         { short_id: short_id,
+          // convert .r to string for DB storage by joining with commas
           r: req.body.r.join(","),
           d: req.body.d,
           z: req.body.z },
@@ -111,13 +116,14 @@ app.post("/save", function(req, res) {
           saveShader(iteration += 1, callback);
         }
         else {
-          callback(short_id);
+          callback(result, short_id);
         }
     });
   };
 
   saveShader(1, function(result, short_id) {
     res.json({
+      insert_id : result.insertId,
       short_id : short_id
     });
   });
