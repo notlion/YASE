@@ -44,8 +44,8 @@ define(function (require) {
           hides_when_closed: true
         },
         {
-          name: "saveToDB",
-          title: "SaveToDB",
+          name: "link",
+          title: "Get Link",
           hides_when_closed: true
         },
         {
@@ -92,7 +92,7 @@ define(function (require) {
         });
 
       this.editor.buttons.get("save").on("click", this.editor.save, this.editor);
-      this.editor.buttons.get("saveToDB").on("click", this.saveShaderToDB, this);
+      this.editor.buttons.get("link").on("click", this.saveParamsLink, this);
       this.editor.buttons.get("help").on("click", function () {
         self.help.set("open", true);
       });
@@ -240,6 +240,8 @@ define(function (require) {
         title: saved ? "Saved" : "Save",
         enabled: !saved
       });
+      if(!saved)
+        this.editor.buttons.get("link").set("enabled", true);
     },
 
     getParams: function (callback) {
@@ -255,10 +257,12 @@ define(function (require) {
       });
     },
 
-    saveShaderToDB: function () {
+    saveParamsLink: function () {
+      var self = this;
       this.getParams(function (params) {
         $.post("/save", params, function(res) {
           console.log(res);
+          self.editor.buttons.get("link").set("enabled", false);
         });
       });
     },

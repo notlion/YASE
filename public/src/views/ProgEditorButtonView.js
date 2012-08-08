@@ -32,8 +32,10 @@ define(function (require) {
       var self = this;
 
       this.$el.on("click", function (e) {
-        e.preventDefault();
-        self.model.trigger("click");
+        if(self.model.get("enabled")) {
+          e.preventDefault();
+          self.model.trigger("click");
+        }
       });
 
       this.model.on("change", this.render, this);
