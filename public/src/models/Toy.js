@@ -43,6 +43,11 @@ define(function (require) {
           hides_when_closed: true
         },
         {
+          name: "saveToDB",
+          title: "SaveToDB",
+          hides_when_closed: true
+        },
+        {
           name: "help",
           title: "?",
           hides_when_closed: true
@@ -86,6 +91,7 @@ define(function (require) {
         });
 
       this.editor.buttons.get("save").on("click", this.editor.save, this.editor);
+      this.editor.buttons.get("saveToDB").on("click", this.saveShaderToDB, this);
       this.editor.buttons.get("help").on("click", function () {
         self.help.set("open", true);
       });
@@ -232,6 +238,21 @@ define(function (require) {
       this.editor.buttons.get("save").set({
         title: saved ? "Saved" : "Save",
         enabled: !saved
+      });
+    },
+
+    saveShaderToDB: function () {
+      var self = this;
+      Params.lzmaCompress(this.editor.get("src_fragment"), 1, function (res) {
+        var params = {};
+        if(self.has("rotation"))
+          params.r = self.get("rotation");
+        if(self.has("distance"))
+          params.d = self.get("distance");
+        params.z = res;
+        $.post('/save', params, function(response){
+         console.log(response);
+        });
       });
     },
 

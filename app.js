@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-var express = require("express");
+var express = require("express"),
+    mysql   = require('mysql');
 
-
+var db = mysql.createConnection(process.env.MYSQL_URI);
 var app = express.createServer(express.logger());
 app.configure(function () {
   app.use(express.static(__dirname + "/public"));
@@ -23,6 +24,109 @@ app.configure("production", function () {
 
 app.get("/", function (req, res) {
   res.render("index", { env: app.settings.env, layout: false });
+});
+
+
+app.get("/get", function (req, res) {
+  var offset = req.query["offset"] ? parseInt(req.query["offset"]) : 0;
+  var limit  = req.query["limit"] ? parseInt(req.query["limit"])  : 25;
+  var slice = offset + ", " + limit;
+  db.query("SELECT * FROM shaders ORDER BY date LIMIT " + slice,
+    function(err, rows) {
+      if (rows) {
+        var result = [];
+        for(var i = 0; i < rows.length; i++) {
+          result[i] = rows[i];
+          // convert .r to array by splitting on commas
+          result[i].r = rows[i].r.split(",");
+        }
+        res.json({
+          status : "OK",
+          shader : result
+        });
+      }
+      else {
+        res.json({
+          status : "NOT OK"
+        });
+      }
+    }
+  );
+});
+
+
+app.get("/get/:short_id",function(req, res){
+  db.query("SELECT * FROM shaders WHERE short_id = ?", req.params.short_id,
+    function(err, results) {
+      if (err) {
+        res.send("Error finding shader with short_id: " + req.params.short_id);
+      } else {
+        var result = results[0];
+        if (result) {
+          // convert .r to array by splitting on commas
+          result.r = result.r.split(",");
+          res.json({
+            status : "OK",
+            shader : result
+          });
+        } else {
+          res.json({
+            status : "NOT FOUND"
+          });
+        }
+      }
+  });
+});
+
+
+app.get("/count", function(req, res){
+  db.query("SELECT COUNT(*) as count FROM shaders",
+    function(err, result) {
+      res.json({
+        status : "OK",
+        count : result[0].count
+      });
+  });
+});
+
+
+app.post("/save", function(req, res) {
+
+  var generateID = function(length) {
+    var id = "";
+    var chars = "qwrtypsdfghjklzxcvbnm0123456789";
+    while(id.length < length) {
+      var pos = Math.floor(Math.random() * chars.length - 1);
+      id += chars.substring(pos, pos + 1);
+    }
+    return id;
+  }
+
+  var saveShader = function(iteration, callback) {
+    var short_id = generateID(iteration);
+    db.query('INSERT INTO shaders SET ?',
+        { short_id: short_id,
+          // convert .r to string for DB storage by joining with commas
+          r: req.body.r.join(","),
+          d: req.body.d,
+          z: req.body.z },
+      function(err, result) {
+        if (err && err.code === "ER_DUP_ENTRY") {
+          console.log("Duplicate id; Generating another...");
+          saveShader(iteration += 1, callback);
+        }
+        else {
+          callback(result, short_id);
+        }
+    });
+  };
+
+  saveShader(1, function(result, short_id) {
+    res.json({
+      insert_id : result.insertId,
+      short_id : short_id
+    });
+  });
 });
 
 
