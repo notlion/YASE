@@ -322,8 +322,8 @@ define(function (require) {
         if(params.r instanceof Array && params.r.length === 4) {
           self.set("rotation", params.r);
         }
-        if(_.isNumber(params.d))
-          self.set("distance", +params.d);
+        if(params.d !== null && !isNaN(params.d))
+          self.set("distance", parseFloat(params.d));
         if(params.z)
           self.editor.set("src_fragment", params.z);
         else
