@@ -30,10 +30,6 @@ app.get("/", function(req, res) {
 });
 
 
-function parseResponse(response) {
-
-}
-
 app.get("/get", function(req, res) {
 
   var offset = req.query["offset"] ? parseInt(req.query["offset"]) : 0;
