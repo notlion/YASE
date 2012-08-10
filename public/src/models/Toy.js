@@ -4,6 +4,7 @@ define(function (require) {
 
   var Backbone = require("backbone")
     , _        = require("underscore")
+    , $        = require("zepto")
     , Embr     = require("embr")
 
     , Params = require("src/params")
@@ -46,6 +47,11 @@ define(function (require) {
           hides_when_closed: true
         },
         {
+          name: "share",
+          title: "Share",
+          hides_when_closed: true
+        },
+        {
           name: "help",
           title: "?",
           hides_when_closed: true
@@ -55,6 +61,9 @@ define(function (require) {
       this.help = new HelpOverlay({
         src: src_step_template
       });
+
+      this.link = new Backbone.Model({ open: false });
+
       this.audio = new Soundcloud();
 
 
@@ -89,6 +98,7 @@ define(function (require) {
         });
 
       this.editor.buttons.get("save").on("click", this.editor.save, this.editor);
+      this.editor.buttons.get("share").on("click", this.saveParamsLink, this);
       this.editor.buttons.get("help").on("click", function () {
         self.help.set("open", true);
       });
@@ -251,9 +261,11 @@ define(function (require) {
         title: saved ? "Saved" : "Save",
         enabled: !saved
       });
+      if(!saved)
+        this.editor.buttons.get("share").set("enabled", true);
     },
 
-    saveParams: function () {
+    getParams: function (callback) {
       var self = this;
       Params.lzmaCompress(this.editor.get("src_fragment"), 1, function (res) {
         var params = {};
@@ -262,13 +274,36 @@ define(function (require) {
         if(self.has("distance"))
           params.d = self.get("distance");
         params.z = res;
+        callback(params);
+      });
+    },
+
+    saveParamsLink: function () {
+      var self = this;
+      this.getParams(function (params) {
+        $.ajax({
+          url: "/save",
+          type: "post",
+          data: params,
+          dataType: "json",
+          success: function(res) {
+            self.editor.buttons.get("share").set("enabled", false);
+            self.link.set(res);
+            self.link.set("open", true);
+          }
+        });
+      });
+    },
+
+    saveParams: function () {
+      var self = this;
+      this.getParams(function (params) {
         window.location.hash = Params.stringify(params, 3);
         self.setSaved(true);
       });
     },
 
-    loadParams: function (callback) {
-      var params = Params.parse(window.location.hash);
+    loadParams: function (params, callback) {
       if(params.z) {
         Params.lzmaDecompress(params.z, function (res) {
           params.z = res;
@@ -280,14 +315,35 @@ define(function (require) {
       }
     },
 
+    loadHashParams: function (callback) {
+      var self = this, hash = window.location.hash;
+
+      if(hash.length === 0) {
+        callback({});
+        return;
+      }
+
+      if(hash.indexOf("=") >= 0)
+        this.loadParams(Params.parse(hash), callback);
+      else
+        $.ajax({
+          url: "/get/" + hash.slice(1),
+          type: "get",
+          dataType: "json",
+          success: function(res) {
+            self.loadParams(res, callback)
+          }
+        });
+    },
+
     start: function () {
       var self = this;
-      this.loadParams(function (params) {
+      this.loadHashParams(function (params) {
         if(params.r instanceof Array && params.r.length === 4) {
           self.set("rotation", params.r);
         }
-        if(!isNaN(params.d))
-          self.set("distance", +params.d);
+        if(params.d !== null && !isNaN(params.d))
+          self.set("distance", parseFloat(params.d));
         if(params.z)
           self.editor.set("src_fragment", params.z);
         else
