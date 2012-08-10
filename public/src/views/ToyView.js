@@ -50,9 +50,12 @@ define(function (require) {
 
       this.arcball = new Arcball(this.el);
 
-      var sc = 10.0;
-      mat4.ortho(-sc, sc, -sc, sc, -sc sc, this.projection_light);
-      this.modelview_light = mat4.create();
+      var sc = toy.get("shadow_volume_scale");
+      this.light_projection = mat4.ortho(-sc, sc, -sc, sc, -sc, sc);
+      this.light_modelview = mat4.identity();
+      this.light_mvp = mat4.multiply(this.light_projection, this.light_modelview, mat4.create());
+
+      this.debug_prog = new Embr.Program(require("text!template/step.vsh"), require("text!template/debugdepth.fsh")).link();
 
 
       // Init Subviews
@@ -142,6 +145,9 @@ define(function (require) {
         , toy = this.model
         , time = (Date.now() - this.start_time) / 1000
         , res = toy.get("fbo_res")
+        , res_shadow = toy.get("fbo_res_shadow")
+        , shadow_volume_scale = toy.get("shadow_volume_scale")
+        , point_size = +toy.editor.get("define_point_size") || 2
         , clip_near = 0.1
         , clip_far = 100.0
         , fov = 60.0;
@@ -230,9 +236,23 @@ define(function (require) {
 
       toy.fbo_shadow_depth.bind();
 
-        toy.prog_depth.use({
+        gl.viewport(0, 0, res_shadow, res_shadow);
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
 
+        toy.fbo_read.textures[0].bind(0); // Position
+
+        toy.prog_depth.use({
+          u_position: 0,
+          u_projection: this.light_projection,
+          u_modelview: this.light_modelview,
+          u_point_size: 1.0
         });
+
+        toy.vbo_particles.setProg(toy.prog_depth).draw();
+
+        toy.fbo_read.textures[0].unbind();
 
       toy.fbo_shadow_depth.unbind();
 
@@ -245,17 +265,29 @@ define(function (require) {
       gl.enable(gl.DEPTH_TEST);
 
       toy.fbo_read.textures[0].bind(0); // Position
+      toy.fbo_shadow_depth.textures[0].bind(1);
 
       toy.prog_final.use({
         u_mvp: this.mvp,
+        u_light_mvp: this.light_mvp,
         u_position: 0,
-        u_color: 1,
-        u_point_size: +this.model.editor.get("define_point_size") || 2
+        u_shadow_depth: 1,
+        u_point_size: point_size
       });
 
-      toy.vbo_particles.draw();
+      toy.vbo_particles.setProg(toy.prog_final).draw();
 
       toy.fbo_read.textures[0].unbind();
+      toy.fbo_shadow_depth.textures[0].unbind();
+
+
+      // Render Debug
+
+      // gl.viewport(0, 0, res_shadow, res_shadow);
+      // gl.disable(gl.DEPTH_TEST);
+      // toy.fbo_shadow_depth.textures[0].bind(0);
+      // toy.vbo_plane.setProg(this.debug_prog.use({ u_texture: 0 })).draw();
+      // toy.fbo_shadow_depth.textures[0].unbind();
     }
 
   });

@@ -29,6 +29,7 @@ define(function (require) {
     defaults: {
       fbo_res: 512,
       fbo_res_shadow: 512,
+      shadow_volume_scale: 10,
       rotation: null,
       distance: null
     },
