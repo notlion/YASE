@@ -13,12 +13,10 @@ void main() {
   gl_Position = u_mvp * p;
   gl_PointSize = u_point_size;
 
-  vec4 lp = u_light_mvp * p;
-  float shadow_depth = texture2D(u_shadow_depth, (lp.xy + 1.) * .5).x;
+  vec4 dp = u_light_mvp * p;
+  float depth = texture2D(u_shadow_depth, (dp.xy + 1.) * .5).x;
 
-  float shadow = clamp(exp(-20. * (lp.z - shadow_depth)), 0., 1.);
+  float shadow = clamp(exp(-10. * (dp.z - depth)), 0., 1.);
 
-  t.w *= shadow;
-
-  v_color = vec4(t.w, t.w, t.w, 1.);
+  v_color = vec4(t.www * shadow, 1.);
 }
