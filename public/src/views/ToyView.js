@@ -54,13 +54,6 @@ define(function (require) {
       this.light_projection = mat4.ortho(-sc, sc, -sc, sc, -sc, sc);
       this.light_modelview = mat4.identity();
       this.light_mvp = mat4.multiply(this.light_projection, this.light_modelview, mat4.create());
-      // this.shadow_transform = mat4.create(this.light_mvp);
-      // mat4.scale(this.shadow_transform, [ 0.5, 0.5, 1.0 ]);
-      // mat4.translate(this.shadow_transform, [ 0.5, 0.5, 0.0 ]);
-      // console.log(this.shadow_transform);
-
-
-      this.debug_prog = new Embr.Program(require("text!template/step.vsh"), require("text!template/debugdepth.fsh")).link();
 
 
       // Init Subviews
@@ -286,15 +279,6 @@ define(function (require) {
       toy.vbo_particles.setProg(toy.prog_final).draw();
 
       toy.fbo_read.textures[0].unbind();
-
-
-      // Render Debug
-
-      // gl.viewport(0, 0, res_shadow, res_shadow);
-      // gl.disable(gl.DEPTH_TEST);
-      // toy.fbo_shadow_depth.textures[0].bind(0);
-      // toy.vbo_plane.setProg(this.debug_prog.use({ u_texture: 0 })).draw();
-      // toy.fbo_shadow_depth.textures[0].unbind();
     }
 
   });
