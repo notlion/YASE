@@ -180,7 +180,9 @@ define(function (require) {
 
       this.fbo_shadow_depth = new Embr.Fbo()
         .attach(new Embr.Texture({
-          width: res_shadow, height: res_shadow, type: gl.FLOAT, data: null
+          width: res_shadow, height: res_shadow,
+          type: gl.FLOAT,
+          data: null
         }))
         .attach(new Embr.Rbo({ width: res_shadow, height: res_shadow }))
         .check();

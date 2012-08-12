@@ -54,6 +54,11 @@ define(function (require) {
       this.light_projection = mat4.ortho(-sc, sc, -sc, sc, -sc, sc);
       this.light_modelview = mat4.identity();
       this.light_mvp = mat4.multiply(this.light_projection, this.light_modelview, mat4.create());
+      // this.shadow_transform = mat4.create(this.light_mvp);
+      // mat4.scale(this.shadow_transform, [ 0.5, 0.5, 1.0 ]);
+      // mat4.translate(this.shadow_transform, [ 0.5, 0.5, 0.0 ]);
+      // console.log(this.shadow_transform);
+
 
       this.debug_prog = new Embr.Program(require("text!template/step.vsh"), require("text!template/debugdepth.fsh")).link();
 
@@ -195,6 +200,7 @@ define(function (require) {
           toy.tex_index.bind(2);
           toy.tex_eq_left.bind(3);
           toy.tex_eq_right.bind(4);
+          toy.fbo_shadow_depth.textures[0].bind(5);
 
           toy.editor.program.use({
             position:           0,
@@ -202,6 +208,8 @@ define(function (require) {
             index:              2,
             amp_left:           3,
             amp_right:          4,
+            shadow_depth:       5,
+            light_mvp:          this.light_mvp,
             resolution:         res,
             oneOverRes:         1.0 / res,
             count:              res * res,
@@ -224,6 +232,7 @@ define(function (require) {
           toy.tex_index.unbind();
           toy.tex_eq_left.unbind();
           toy.tex_eq_right.unbind();
+          toy.fbo_shadow_depth.textures[0].unbind();
 
         toy.fbo_write.unbind();
         toy.swap();
@@ -234,27 +243,29 @@ define(function (require) {
 
       // Render shadow pass
 
-      toy.fbo_shadow_depth.bind();
+      if(+toy.editor.get("define_shadows")) {
+        toy.fbo_shadow_depth.bind();
 
-        gl.viewport(0, 0, res_shadow, res_shadow);
-        gl.clearColor(0, 0, 0, 1);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.DEPTH_TEST);
+          gl.viewport(0, 0, res_shadow, res_shadow);
+          gl.clearColor(0, 0, 0, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          gl.enable(gl.DEPTH_TEST);
 
-        toy.fbo_read.textures[0].bind(0); // Position
+          toy.fbo_read.textures[0].bind(0); // Position
 
-        toy.prog_depth.use({
-          u_position: 0,
-          u_projection: this.light_projection,
-          u_modelview: this.light_modelview,
-          u_point_size: 1.0
-        });
+          toy.prog_depth.use({
+            u_position: 0,
+            u_projection: this.light_projection,
+            u_modelview: this.light_modelview,
+            u_point_size: 1.0
+          });
 
-        toy.vbo_particles.setProg(toy.prog_depth).draw();
+          toy.vbo_particles.setProg(toy.prog_depth).draw();
 
-        toy.fbo_read.textures[0].unbind();
+          toy.fbo_read.textures[0].unbind();
 
-      toy.fbo_shadow_depth.unbind();
+        toy.fbo_shadow_depth.unbind();
+      }
 
 
       // Render view pass
@@ -265,20 +276,16 @@ define(function (require) {
       gl.enable(gl.DEPTH_TEST);
 
       toy.fbo_read.textures[0].bind(0); // Position
-      toy.fbo_shadow_depth.textures[0].bind(1);
 
       toy.prog_final.use({
         u_mvp: this.mvp,
-        u_light_mvp: this.light_mvp,
         u_position: 0,
-        u_shadow_depth: 1,
         u_point_size: point_size
       });
 
       toy.vbo_particles.setProg(toy.prog_final).draw();
 
       toy.fbo_read.textures[0].unbind();
-      toy.fbo_shadow_depth.textures[0].unbind();
 
 
       // Render Debug

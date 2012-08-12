@@ -83,7 +83,8 @@ float noise(in float x, in float y, in float z) {
 
 // YASE Specific
 
-uniform sampler2D position, position_prev, index, amp_left, amp_right;
+uniform sampler2D position, position_prev, index, amp_left, amp_right, shadow_depth;
+uniform mat4 light_mvp;
 
 /** Camera position */
 uniform vec3 cameraPos;
@@ -159,6 +160,19 @@ vec4 getPrevPos(in float i) {
 }
 vec4 getPrevPos(in int i) {
   return getPrevPos(float(i));
+}
+
+float getShadowDepth(in vec3 p) {
+  vec4 pt = light_mvp * vec4(p, 1.);
+  return pt.z - texture2D(shadow_depth, (pt.xy + 1.) * .5).x;
+}
+
+/**
+Get the amount of shadow for a position in space.
+Requires `#define shadows 1`
+*/
+float getShadow(in vec3 p, in float darkening_factor) {
+  return clamp(exp(-darkening_factor * getShadowDepth(p)), 0., 1.);
 }
 
 /**
