@@ -35,7 +35,7 @@ app.get("/get", function(req, res) {
   var offset = req.query["offset"] ? parseInt(req.query["offset"]) : 0;
   var limit  = req.query["limit"]  ? parseInt(req.query["limit"])  : 25;
   var slice = offset + ", " + limit;
-  var query = "SELECT * FROM shaders ORDER BY date LIMIT " + slice;
+  var query = "SELECT * FROM shaders ORDER BY date DESC LIMIT " + slice;
 
   db.query(query, function(err, rows) {
     if(rows) {
@@ -51,6 +51,11 @@ app.get("/get", function(req, res) {
       res.json(204);
   });
 
+});
+
+
+app.get("/gallery", function(req, res) {
+  res.render("gallery", { env: app.settings.env, layout: false });
 });
 
 

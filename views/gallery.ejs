@@ -1,0 +1,36 @@
+<!--
+Hey There. Welcome to the source code!
+You might have noticed that it is minified :(
+But dispair not! GitHub is here:
+https://github.com/notlion/YASE
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Yet.Another.Shader.Editor. / Gallery</title>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+  <script src="lib/zepto.js"></script>
+</head>
+<body>
+<div id="gallery"><ul></ul></div>
+<script type="text/javascript">
+
+  $(document).ready(function() {
+    $.getJSON("get/", function(d) {
+      var lis = [];
+      for(i = 0; i < d.length; i++) {
+        lis.push(
+          '<li>' +
+          '<a href="/#' + d[i].short_id + '">' +
+          d[i].date +
+          '</a>' +
+          '</li>'
+          );
+      }
+      $("#gallery").append(lis.join(""));
+    });
+  });
+
+</script>
+</body>
+</html>
