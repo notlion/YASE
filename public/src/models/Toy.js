@@ -31,7 +31,8 @@ define(function (require) {
       fbo_res_shadow: 512,
       shadow_volume_scale: 10,
       rotation: null,
-      distance: null
+      distance: null,
+      rendering: false,
     },
 
     initialize: function () {
@@ -106,6 +107,7 @@ define(function (require) {
 
       this.help.on("change:open", function (help, open) {
         self.editor.buttons.get("help").set("enabled", !open);
+        self.set("rendering", !open);
       });
     },
 
@@ -351,6 +353,7 @@ define(function (require) {
           self.editor.set("src_fragment", params.z);
         else
           self.editor.set("src_fragment", src_step_fragment);
+        self.set("rendering", true);
       });
     }
 

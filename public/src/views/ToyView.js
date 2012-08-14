@@ -29,12 +29,12 @@ define(function (require) {
 
       this.el.addEventListener("webglcontextlost", function (e) {
         e.preventDefault();
-        self.stop();
+        toy.set("rendering", false);
       }, false);
       this.el.addEventListener("webglcontextrestored", function (e) {
         toy.initGL();
         toy.editor.compile();
-        self.start();
+        toy.set("rendering", true);
       }, false);
 
       toy.set("context", utils.getWebGLContext(this.el));
@@ -75,6 +75,10 @@ define(function (require) {
         })
         .on("change:distance", function (toy, d) {
           self.arcball.setDistance(d);
+        })
+        .on("change:rendering", function (toy, rendering) {
+          if(rendering) self.start();
+          else self.stop();
         });
 
       toy.editor
@@ -126,8 +130,9 @@ define(function (require) {
 
     start: function () {
       var self = this;
-      this.start_time = Date.now();
-      this.frame_num = 0;
+      this.stop();
+      this.start_time = this.start_time || Date.now();
+      this.frame_num = this.frame_num || 0;
       (function renderLoop () {
         self.loop_handle = utils.requestAnimationFrame(renderLoop);
         self.render();
@@ -135,7 +140,10 @@ define(function (require) {
     },
 
     stop: function () {
-      utils.cancelAnimationFrame(this.loop_handle);
+      if(this.loop_handle) {
+        utils.cancelAnimationFrame(this.loop_handle);
+        this.loop_handle = null;
+      }
     },
 
     render: function () {
