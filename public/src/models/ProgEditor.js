@@ -67,6 +67,7 @@ define(function (require) {
       ]);
 
       this.program = new Embr.Program();
+      this.program_tmp = new Embr.Program();
 
       this
         .on("change:src_vertex change:src_fragment", this.compile, this)
@@ -85,14 +86,14 @@ define(function (require) {
       });
     },
 
-    compile: _.debounce(function () {
+    compile: _.debounce(function() {
       var vs = this.get("src_vertex")
         , fs = this.get("src_fragment")
         , vt = this.get("src_vertex_template")
         , ft = this.get("src_fragment_template");
 
       if(vs && fs) {
-        _.each(extractShaderDefines(fs), function (value, name) {
+        _.each(extractShaderDefines(fs), function(value, name) {
           if(_.isNumber(value))
             value = +value;
           this.set("define_" + name, value);
@@ -104,8 +105,8 @@ define(function (require) {
           fs = _.template(ft, this.attributes);
 
         try {
-          this.program.compile(vs, fs);
-          this.program.link();
+          this.program_tmp.compile(vs, fs);
+          this.program_tmp.link();
         }
         catch(err) {
           var i, row = this.get("src_fragment_row")
@@ -120,12 +121,19 @@ define(function (require) {
           return;
         }
 
+        this.swap();
         this.set("compiled", true);
         this.trigger("compile", this.program);
       }
     }, 200),
 
-    save: function () {
+    swap: function() {
+      var tmp = this.program_tmp;
+      this.program_tmp = this.program;
+      this.program = tmp;
+    },
+
+    save: function() {
       this.trigger("save", this);
     }
 
