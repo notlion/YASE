@@ -1,4 +1,4 @@
-define(function (require) {
+define(function(require) {
 
   "use strict";
 
@@ -21,11 +21,11 @@ define(function (require) {
     tagName: "div",
     className: "overlay help",
 
-    initialize: function () {
+    initialize: function() {
       var self = this;
 
       this.model.on("change:open", function (model, open) {
-        self.$el.animate({ opacity: open ? 1 : 0 }, 200, "ease", function () {
+        self.$el.animate({ opacity: open ? 1 : 0 }, 200, "ease", function() {
           if(!self.model.get("open"))
             self.$el.hide();
         });
@@ -38,7 +38,7 @@ define(function (require) {
       this.render();
     },
 
-    render: function () {
+    render: function() {
       var self = this;
 
       var groups = _.reduce([
@@ -48,7 +48,7 @@ define(function (require) {
       ], function (v, type) {
         return v + group_template({
           type: type,
-          contents: _.reduce(self.model.entries, function (v, entry) {
+          contents: _.reduce(self.model.entries, function(v, entry) {
             return entry.type == type ? v + entry_template(entry) : v;
           }, "")
         });

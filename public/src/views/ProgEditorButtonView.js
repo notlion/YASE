@@ -1,4 +1,4 @@
-define(function (require) {
+define(function(require) {
 
   "use strict";
 
@@ -28,10 +28,10 @@ define(function (require) {
 
   var ProgEditorButtonView = Backbone.View.extend({
 
-    initialize: function () {
+    initialize: function() {
       var self = this;
 
-      this.$el.on("click", function (e) {
+      this.$el.on("click", function(e) {
         if(self.model.get("enabled")) {
           e.preventDefault();
           self.model.trigger("click");
@@ -43,7 +43,7 @@ define(function (require) {
       this.render();
     },
 
-    render: function () {
+    render: function() {
       var tpl = this.model.has("icon") ? template_svg : template_button
         , classNames = [ this.model.get("name") ];
 

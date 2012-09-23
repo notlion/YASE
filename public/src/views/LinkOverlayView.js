@@ -33,7 +33,7 @@ define(function (require) {
 
       this.$el.html(link_template(this.model.attributes));
 
-      function onClick (e) {
+      function onClick(e) {
         e.preventDefault();
         self.model.set("open", false);
       }

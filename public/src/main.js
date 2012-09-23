@@ -5,42 +5,46 @@ requirejs.config({
       exports: function () {
         return this.Backbone.noConflict();
       }
-    },
-    "underscore": {
+    }
+  , "underscore": {
       exports: function () {
         return this._.noConflict();
       }
-    },
-    "zepto": {
+    }
+  , "zepto": {
       exports: "Zepto"
-    },
-    "lzma": {
+    }
+  , "lzma": {
       exports: "LZMA"
-    },
-    "codemirror": {
+    }
+  , "codemirror": {
       exports: "CodeMirror"
-    },
-    "codemirror-glsl": {
+    }
+  , "codemirror-glsl": {
       deps: [ "codemirror" ]
-    },
-    "soundcloud": {
+    }
+  , "soundcloud": {
       deps: [ "soundmanager" ],
       exports: "SC"
     }
-  },
-  baseUrl: "../",
-  paths: {
-    "text":            "lib/text",
-    "embr":            "lib/embr/src/embr",
-    "glmatrix":        "lib/gl-matrix",
-    "backbone":        "lib/backbone",
-    "underscore":      "lib/underscore",
-    "zepto":           "lib/zepto",
-    "lzma":            "lib/lzma/lzma",
-    "codemirror":      "lib/codemirror/codemirror",
-    "codemirror-glsl": "lib/codemirror/glsl",
-    "soundmanager":    "lib/soundmanager/soundmanager2-nodebug",
-    "soundcloud":      "lib/soundcloud-sdk"
+  , "socket.io": {
+      exports: "io"
+    }
+  }
+, baseUrl: "../"
+, paths: {
+    "text":            "lib/text"
+  , "embr":            "lib/embr/src/embr"
+  , "glmatrix":        "lib/gl-matrix"
+  , "backbone":        "lib/backbone"
+  , "underscore":      "lib/underscore"
+  , "zepto":           "lib/zepto"
+  , "lzma":            "lib/lzma/lzma"
+  , "codemirror":      "lib/codemirror/codemirror"
+  , "codemirror-glsl": "lib/codemirror/glsl"
+  , "soundmanager":    "lib/soundmanager/soundmanager2-nodebug"
+  , "soundcloud":      "lib/soundcloud-sdk"
+  , "socket.io":       "lib/socket.io"
   }
 });
 window.SM2_DEFER = true;

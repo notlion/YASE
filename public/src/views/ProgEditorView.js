@@ -26,7 +26,7 @@ define(function (require) {
       "click .toggle-open": "toggleOpen"
     },
 
-    initialize: function () {
+    initialize: function() {
       var self = this;
 
       if(!this.model)
@@ -35,20 +35,20 @@ define(function (require) {
       this.cm_error_marks = [];
 
       this.model
-        .on("change:compiled", function (model, compiled) {
+        .on("change:compiled", function(model, compiled) {
           if(compiled)
             self.clearErrorMarks();
         })
-        .on("change:errors", function (model, errors) {
+        .on("change:errors", function(model, errors) {
           self.markErrors(errors);
         })
-        .on("change:open", function (model, open) {
+        .on("change:open", function(model, open) {
           var d = 200, e = "ease", vis = "visibility"
             , sel = self.$el.find(".code-container, .hides-when-closed");
           self.$el.find(".toggle-open .rotate").animate({
             rotate: open ? "45deg" : "0"
           }, d, e);
-          sel.animate({ opacity: open ? 1 : 0 }, d, e, function () {
+          sel.animate({ opacity: open ? 1 : 0 }, d, e, function() {
             if(!self.model.get("open"))
               sel.hide();
           });
@@ -57,7 +57,7 @@ define(function (require) {
             self.cm_code.refresh();
           }
         })
-        .on("change:src_fragment", function (model, src) {
+        .on("change:src_fragment", function(model, src) {
           if(src != self.cm_code.getValue())
             self.cm_code.setValue(src);
         });
@@ -83,22 +83,22 @@ define(function (require) {
       self.$el.find(".code-container, .hides-when-closed").hide();
     },
 
-    toggleOpen: function () {
+    toggleOpen: function() {
       this.model.set("open", !this.model.get("open"));
     },
 
-    getProg: function () {
+    getProg: function() {
       return this.program.program;
     },
 
-    updateCode: function () {
+    updateCode: function() {
       this.cm_code.setValue(this.model.get("src_fragment"));
       return this;
     },
 
-    markErrors: function (errors) {
+    markErrors: function(errors) {
       this.clearErrorMarks();
-      _.each(errors, function (err) {
+      _.each(errors, function(err) {
         this.cm_error_marks.push(this.cm_code.markText(
           { line: err.line, ch: 0 },
           { line: err.line },
@@ -107,13 +107,13 @@ define(function (require) {
       }, this);
     },
 
-    clearErrorMarks: function () {
+    clearErrorMarks: function() {
       var mark;
       while(mark = this.cm_error_marks.pop())
         mark.clear();
     },
 
-    render: function () {
+    render: function() {
       this.$el.html(_.template(init_template));
 
       var self = this
@@ -128,14 +128,14 @@ define(function (require) {
         autoClearEmptyLines: true,
         lineWrapping: true,
         matchBrackets: true,
-        onCursorActivity: function () { self.cm_code.refresh(); },
-        onChange: function () {
+        onCursorActivity: function() { self.cm_code.refresh(); },
+        onChange: function() {
           self.model.set("src_fragment", self.cm_code.getValue());
         }
       });
       this.cm_code.getWrapperElement().style.visibility = "visible";
 
-      this.model.buttons.each(function (b) {
+      this.model.buttons.each(function(b) {
         this.append(new ProgEditorButtonView({ model: b }).render().el)
       }, this.$el.find(".ui"));
 

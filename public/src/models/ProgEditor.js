@@ -70,7 +70,7 @@ define(function (require) {
       this.program_tmp = new Embr.Program();
 
       this
-        .on("change:src_vertex change:src_fragment", this.compile, this)
+        // .on("change:src_vertex change:src_fragment", this.compile, this)
         .on("change:src_fragment_template", this.updateTemplateData, this);
 
       this.updateTemplateData();

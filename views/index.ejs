@@ -1,32 +1,12 @@
-<!--
-Hey There. Welcome to the source code!
-You might have noticed that it is minified :(
-But dispair not! GitHub is here:
-https://github.com/notlion/YASE
--->
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Yet.Another.Shader.Editor.</title>
+  <title>PARTICLE.SHADER.TOOL</title>
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
   <link href="css/style.css" media="all" rel="stylesheet" type="text/css"/>
-<% if(env == "production") { %>
-  <script src="build/main.js"></script>
-<% } else { %>
   <script data-main="src/main.js" src="lib/require.js"></script>
-<% } %>
 </head>
 <body>
-<canvas id="gl-canvas"></canvas>
-<script type="text/javascript">
-var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-33796321-1']);
-_gaq.push(['_trackPageview']);
-(function(){
-  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-})();
-</script>
+  <canvas id="gl-canvas"></canvas>
 </body>
 </html>

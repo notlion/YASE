@@ -1,4 +1,6 @@
+#ifdef GL_ES
 precision highp float;
+#endif
 
 varying float v_linear_depth;
 
