@@ -2,6 +2,7 @@
 .sass-cache
 *.sublime-project
 *.sublime-workspace
+*.log
 node_modules
 .env
 public/build/

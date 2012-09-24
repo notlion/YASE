@@ -58,7 +58,7 @@ define(function (require) {
         src: src_step_template
       });
 
-      this.link = new Backbone.Model({ open: false });
+      this.link = new Backbone.Model({ open: false })
 
 
       // Socket Interface
@@ -66,6 +66,9 @@ define(function (require) {
       this.socket = io.connect("http://localhost:" + this.get("port"))
 
       this.socket
+        .on("connect", function() {
+          self.socket.emit("src_fragment", self.editor.get("src_fragment"))
+        })
         .on("errors", function (errors) {
           self.editor.set("errors", errors)
         })

@@ -1,19 +1,19 @@
 define(function(require) {
 
-  "use strict";
+  "use strict"
 
   var Backbone = require("backbone")
-    , _        = require("underscore");
+    , _        = require("underscore")
 
 
-  var help_template = _.template(require("text!template/help.tpl"));
+  var help_template = _.template(require("text!template/help.tpl"))
   var group_template = _.template([
     '<div class="<%= type %>">',
       '<h1><%= type %>s</h1>',
       '<%= contents %>',
     '</div>'
-  ].join(""));
-  var entry_template = _.template(require("text!template/help_entry.tpl"));
+  ].join(""))
+  var entry_template = _.template(require("text!template/help_entry.tpl"))
 
 
   var HelpOverlayView = Backbone.View.extend({
@@ -22,24 +22,24 @@ define(function(require) {
     className: "overlay help",
 
     initialize: function() {
-      var self = this;
+      var self = this
 
       this.model.on("change:open", function (model, open) {
         self.$el.animate({ opacity: open ? 1 : 0 }, 200, "ease", function() {
           if(!self.model.get("open"))
-            self.$el.hide();
-        });
+            self.$el.hide()
+        })
         if(open)
-          self.$el.show();
-      });
+          self.$el.show()
+      })
 
-      this.$el.hide().css({ opacity: 0 });
+      this.$el.hide().css({ opacity: 0 })
 
-      this.render();
+      this.render()
     },
 
     render: function() {
-      var self = this;
+      var self = this
 
       var groups = _.reduce([
         "function",
@@ -49,26 +49,26 @@ define(function(require) {
         return v + group_template({
           type: type,
           contents: _.reduce(self.model.entries, function(v, entry) {
-            return entry.type == type ? v + entry_template(entry) : v;
+            return entry.type == type ? v + entry_template(entry) : v
           }, "")
-        });
-      }, "");
+        })
+      }, "")
 
-      this.$el.html(help_template({ contents: groups }));
+      this.$el.html(help_template({ contents: groups }))
 
       function onClick (e) {
-        e.preventDefault();
-        self.model.set("open", false);
+        e.preventDefault()
+        self.model.set("open", false)
       }
 
       this.$el.on("click", function (e) {
-        if(e.target === self.el) onClick(e);
-      });
-      this.$el.find(".close").on("click", onClick);
+        if(e.target === self.el) onClick(e)
+      })
+      this.$el.find(".close").on("click", onClick)
     }
 
-  });
+  })
 
-  return HelpOverlayView;
+  return HelpOverlayView
 
-});
+})

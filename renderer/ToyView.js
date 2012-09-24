@@ -1,8 +1,11 @@
-var Backbone = require("backbone")
-  , _        = require("underscore")
-  , plask    = require("plask")
-  , Embr     = require("../public/lib/embr/src/embr")
-  , Toy      = require("./Toy")
+var Backbone   = require("backbone")
+  , _          = require("underscore")
+  , plask      = require("plask")
+  , Embr       = require("../public/lib/embr/src/embr")
+  , Toy        = require("./Toy")
+  , Arcball    = require("./Arcball")
+  , OscControl = require("./OscControl")
+
 
 var glMatrix = require("../public/lib/gl-matrix")
   , mat4 = glMatrix.mat4
@@ -15,6 +18,9 @@ exports.create = function() {
       width: 1280
     , height: 720
     , type: '3d'
+    , vsync: false
+    , fullscreen: true
+    , position: { x: 1440, y: -0 }
     }
 
   , init: function() {
@@ -24,15 +30,14 @@ exports.create = function() {
       toy.set("context", this.gl)
 
 
-      // Init Arcball + Matrices
-
       this.projection = mat4.create()
       this.modelview = mat4.create()
       this.modelview_inv = mat4.create()
       this.mvp = mat4.create()
       this.camera_pos = vec3.create()
 
-      // this.arcball = new Arcball(this.el)
+      this.arcball = new Arcball()
+      this.control = new OscControl()
 
       var sc = toy.get("shadow_volume_scale")
       this.light_projection = mat4.ortho(-sc, sc, -sc, sc, -sc, sc)
@@ -42,34 +47,21 @@ exports.create = function() {
 
       // Assign event listeners
 
-      toy
-        // .on("change:rotation", function(toy, r) {
-        //   self.arcball.setRotation(r)
-        // })
-        // .on("change:distance", function(toy, d) {
-        //   self.arcball.setDistance(d)
-        // })
-        .on("change:rendering", function(toy, rendering) {
-          if(rendering) self.start()
-          else self.stop()
-        })
+      toy.on("change:rendering", function(toy, rendering) {
+        if(rendering) self.start()
+        else self.stop()
+      })
 
       toy.editor
         .on("change:define_pixel_scale", this.layout, this)
 
-      // toy.audio
-      //   .on("change:queued_sound", function(audio, sound) {
-      //     // TODO: Present some UI here.
-      //     audio.playQueued()
-      //   })
-
-      // this.arcball
-      //   .on("change:rotation", function(arcball, r) {
-      //     toy.set("rotation", [ r[0], r[1], r[2], r[3] ])
-      //   })
-      //   .on("change:distance", function(arcball, d) {
-      //     toy.set("distance", d)
-      //   })
+      this.arcball
+        .on("change:rotation", function(arcball, r) {
+          toy.set("rotation", [ r[0], r[1], r[2], r[3] ])
+        })
+        .on("change:distance", function(arcball, d) {
+          toy.set("distance", d)
+        })
 
 
       // Init Mouse
@@ -78,14 +70,6 @@ exports.create = function() {
       this.mouse_pos_prev = vec3.create()
       this.mouse_world_pos = vec3.create()
       this.mouse_world_pos_prev = vec3.create()
-
-      // $(document).on("mousemove", function(e) {
-      //   self.mouse_pos[0] = e.clientX / self.el.clientWidth
-      //   self.mouse_pos[1] = 1 - (e.clientY / self.el.clientHeight)
-      // })
-      // this.on("resize", function() {
-      //   self.layout()
-      // })
 
 
       // Start
@@ -120,8 +104,17 @@ exports.create = function() {
         , clip_far = 100.0
         , fov = 60.0
 
-      // this.arcball.getModelView(this.modelview)
-      mat4.lookAt([ 0, 0, 5 ], [ 0, 0, 0 ], [ 0, 1, 0 ], this.modelview)
+      // Animate Arcball
+
+      var velocity = this.control.get("velocity")
+        , distance = this.control.get("distance.x")
+      if(velocity)
+        this.arcball.pan(velocity.x, velocity.y)
+      if(distance)
+        this.arcball.distance = distance
+
+      this.arcball.getModelView(this.modelview)
+      // mat4.lookAt([ 0, 0, 5 ], [ 0, 0, 0 ], [ 0, 1, 0 ], this.modelview)
       mat4.perspective(fov, this.aspect, clip_near, clip_far, this.projection)
       mat4.multiply(this.projection, this.modelview, this.mvp)
 
@@ -162,16 +155,12 @@ exports.create = function() {
           toy.fbo_read.textures[0].bind(0)      // Position
           toy.fbo_prev_read.textures[0].bind(1) // Previous position
           toy.tex_index.bind(2)
-          // toy.tex_eq_left.bind(3)
-          // toy.tex_eq_right.bind(4)
           toy.fbo_shadow_depth.textures[0].bind(3)
 
           toy.editor.program.use({
             position:           0
           , position_prev:      1
           , index:              2
-            // amp_left:           3
-            // amp_right:          4
           , shadow_depth:       3
           , light_mvp:          this.light_mvp
           , resolution:         res
@@ -184,7 +173,6 @@ exports.create = function() {
           , cameraPos:          this.camera_pos
           , time:               time
           , frame:              this.frame_num
-            // progress:           toy.audio.get("progress")
           })
 
           toy.vbo_plane
@@ -194,8 +182,6 @@ exports.create = function() {
           toy.fbo_read.textures[0].unbind()
           toy.fbo_prev_read.textures[0].unbind()
           toy.tex_index.unbind()
-          // toy.tex_eq_left.unbind()
-          // toy.tex_eq_right.unbind()
           toy.fbo_shadow_depth.textures[0].unbind()
 
         toy.fbo_write.unbind()

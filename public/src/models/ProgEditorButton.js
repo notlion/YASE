@@ -1,8 +1,8 @@
 define(function (require) {
 
-  "use strict";
+  "use strict"
 
-  var Backbone = require("backbone");
+  var Backbone = require("backbone")
 
 
   var ProgEditorButton = Backbone.Model.extend({
@@ -18,15 +18,15 @@ define(function (require) {
 
     initialize: function () {
       if(!this.id)
-        this.set("id", this.get("name"));
+        this.set("id", this.get("name"))
     }
 
-  });
+  })
 
   ProgEditorButton.Collection = Backbone.Collection.extend({
     model: ProgEditorButton
-  });
+  })
 
-  return ProgEditorButton;
+  return ProgEditorButton
 
-});
+})

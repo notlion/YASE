@@ -28,8 +28,8 @@ module.exports = Backbone.Model.extend({
     fbo_res: 512
   , fbo_res_shadow: 512
   , shadow_volume_scale: 10
-  , rotation: null
-  , distance: null
+  , rotation: [ 0, 0, 0, 1 ]
+  , distance: 5
   , rendering: false
   }
 
@@ -174,36 +174,11 @@ module.exports = Backbone.Model.extend({
       })
 
 
-    // Create audio textures
-
-    // var eq_tex_fmt = {
-    //   width: this.audio.get("num_bands")
-    // , height: 1
-    // , format: gl.LUMINANCE
-    // , format_internal: gl.LUMINANCE
-    // , data: null
-    // }
-
-    // if(this.tex_eq_left)  this.tex_eq_left.cleanup()
-    // if(this.tex_eq_right) this.tex_eq_right.cleanup()
-
-    // this.tex_eq_left = new Embr.Texture(eq_tex_fmt)
-    // this.tex_eq_right = new Embr.Texture(eq_tex_fmt)
-
-
     // Events
 
     this.editor.on("compile", function (program) {
       self.vbo_plane.setProg(program)
     })
-
-    // this.audio
-    //   .on("change:eq_left", function (audio, eq_left) {
-    //     self.tex_eq_left.set({ data: eq_left })
-    //   })
-    //   .on("change:eq_right", function (audio, eq_right) {
-    //     self.tex_eq_right.set({ data: eq_right })
-    //   })
   }
 
 , swap: function () {
