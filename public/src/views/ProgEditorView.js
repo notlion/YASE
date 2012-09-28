@@ -20,7 +20,7 @@ define(function (require) {
   var ProgEditorView = Backbone.View.extend({
 
     tagName: "div",
-    id: "prog-editor",
+    className: "prog-editor",
 
     events: {
       "click .toggle-open": "toggleOpen"

@@ -10,7 +10,6 @@ define(function (require) {
     , Params = require("src/params")
 
     , ProgEditor  = require("src/models/ProgEditor")
-    , HelpOverlay = require("src/models/HelpOverlay")
 
     , src_step_vertex    = require("text!template/step.vsh")
     , src_step_fragment  = require("text!template/step.fsh")
@@ -25,89 +24,67 @@ define(function (require) {
       shadow_volume_scale: 10,
       rotation: null,
       distance: null,
-      rendering: false,
-      port: 4000
+      rendering: false
     },
 
     initialize: function () {
       var self = this;
 
-      this.editor = new ProgEditor({
-        src_vertex: src_step_vertex,
-        src_fragment_template: src_step_template
-      });
-      this.editor.buttons.add([
+      var EditorCollection = Backbone.Collection.extend({
+        model: ProgEditor
+      })
+
+      this.editors = new EditorCollection([
         {
-          name: "save",
-          title: "Save",
-          hides_when_closed: true
+          id: "left",
+          src_vertex: src_step_vertex,
+          src_fragment: src_step_fragment,
+          src_fragment_template: src_step_template
         },
         {
-          name: "share",
-          title: "Share",
-          hides_when_closed: true
-        },
-        {
-          name: "help",
-          title: "?",
-          hides_when_closed: true
+          id: "right",
+          src_vertex: src_step_vertex,
+          src_fragment: src_step_fragment,
+          src_fragment_template: src_step_template
         }
-      ]);
-
-      this.help = new HelpOverlay({
-        src: src_step_template
-      });
-
-      this.link = new Backbone.Model({ open: false })
+      ])
 
 
       // Socket Interface
 
-      this.socket = io.connect("http://localhost:" + this.get("port"))
-
-      this.socket
-        .on("connect", function() {
-          self.socket.emit("src_fragment", self.editor.get("src_fragment"))
-        })
-        .on("errors", function (errors) {
-          self.editor.set("errors", errors)
-        })
-        .on("compiled", function (compiled) {
-          self.editor.set("compiled", compiled)
-        })
+      this.socket = io.connect("http://localhost:4000")
 
       // Event Listeners
 
-      this.editor
-        .on("change:errors", function (editor, errors) {
-          if(errors.length > 0)
-            console.log("Compile Errors:\n", errors);
-        })
-        .on("change:src_fragment", function (editor, src) {
-          self.socket.emit("src_fragment", src)
-          self.setSaved(false);
-        })
-        .on("save", this.saveParams, this);
+      this.editors.each(function (editor) {
+        function suffix(addr) {
+          return addr + "/" + editor.id
+        }
 
-      this.editor.buttons.get("save").on("click", this.editor.save, this.editor);
-      this.editor.buttons.get("share").on("click", this.saveParamsLink, this);
-      this.editor.buttons.get("help").on("click", function () {
-        self.help.set("open", true);
-      });
+        self.socket
+          .on("connect", function() {
+            self.socket.emit(suffix("src_fragment"), editor.get("src_fragment"))
+          })
+          .on(suffix("errors"), function (errors) {
+            editor.set("errors", errors)
+          })
+          .on(suffix("compiled"), function (compiled) {
+            editor.set("compiled", compiled)
+          })
+          .on(suffix("shader_id"), function (shader_id) {
+            editor.set("shader_id", shader_id)
+          })
 
-      this.help.on("change:open", function (help, open) {
-        self.editor.buttons.get("help").set("enabled", !open);
-        self.set("rendering", !open);
-      });
-    },
-
-    setSaved: function (saved) {
-      this.editor.buttons.get("save").set({
-        title: saved ? "Saved" : "Save",
-        enabled: !saved
-      });
-      if(!saved)
-        this.editor.buttons.get("share").set("enabled", true);
+        editor
+          .on("change:errors", function (editor, errors) {
+            if(errors.length > 0)
+              console.log("Compile Errors:\n", errors);
+          })
+          .on("change:src_fragment", function (editor, src) {
+            self.socket.emit(suffix("src_fragment"), src)
+            editor.set("saved", false);
+          })
+      })
     },
 
     getParams: function (callback) {
@@ -120,23 +97,6 @@ define(function (require) {
           params.d = self.get("distance");
         params.z = res;
         callback(params);
-      });
-    },
-
-    saveParamsLink: function () {
-      var self = this;
-      this.getParams(function (params) {
-        $.ajax({
-          url: "/save",
-          type: "post",
-          data: params,
-          dataType: "json",
-          success: function(res) {
-            self.editor.buttons.get("share").set("enabled", false);
-            self.link.set(res);
-            self.link.set("open", true);
-          }
-        });
       });
     },
 
@@ -179,22 +139,6 @@ define(function (require) {
             self.loadParams(res, callback)
           }
         });
-    },
-
-    start: function () {
-      var self = this;
-      this.loadHashParams(function (params) {
-        // if(params.r instanceof Array && params.r.length === 4) {
-        //   self.set("rotation", params.r);
-        // }
-        // if(params.d !== null && !isNaN(params.d))
-        //   self.set("distance", parseFloat(params.d));
-        if(params.z)
-          self.editor.set("src_fragment", params.z);
-        else
-          self.editor.set("src_fragment", src_step_fragment);
-        // self.set("rendering", true);
-      });
     }
 
   });

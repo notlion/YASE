@@ -1,10 +1,8 @@
-var Backbone   = require("backbone")
-  , _          = require("underscore")
+var _          = require("underscore")
   , plask      = require("plask")
   , Embr       = require("../public/lib/embr/src/embr")
   , Toy        = require("./Toy")
   , Arcball    = require("./Arcball")
-  , OscControl = require("./OscControl")
 
 
 var glMatrix = require("../public/lib/gl-matrix")
@@ -37,7 +35,6 @@ exports.create = function() {
       this.camera_pos = vec3.create()
 
       this.arcball = new Arcball()
-      this.control = new OscControl()
 
       var sc = toy.get("shadow_volume_scale")
       this.light_projection = mat4.ortho(-sc, sc, -sc, sc, -sc, sc)
@@ -52,8 +49,8 @@ exports.create = function() {
         else self.stop()
       })
 
-      toy.editor
-        .on("change:define_pixel_scale", this.layout, this)
+      // toy.editor
+      //   .on("change:define_pixel_scale", this.layout, this)
 
       this.arcball
         .on("change:rotation", function(arcball, r) {
@@ -74,7 +71,10 @@ exports.create = function() {
 
       // Start
 
-      toy.editor.compile()
+      toy.editors.each(function (editor) {
+        editor.compile()
+      })
+
       this.layout()
     }
 
@@ -93,28 +93,31 @@ exports.create = function() {
     }
 
   , draw: function() {
-      var gl = Embr.gl
+      var self = this
+        , gl = Embr.gl
         , toy = this.model
+        , control = toy.control
         , time = (Date.now() - this.start_time) / 1000
         , res = toy.get("fbo_res")
         , res_shadow = toy.get("fbo_res_shadow")
         , shadow_volume_scale = toy.get("shadow_volume_scale")
-        , point_size = +toy.editor.get("define_point_size") || 2
+        , point_size = 2//+toy.editor.get("define_point_size") || 2
         , clip_near = 0.1
         , clip_far = 100.0
-        , fov = 60.0
+        , fov = control.get("fov.x")
+        , shader_mix = control.get("shader_mix.x")
+
 
       // Animate Arcball
 
-      var velocity = this.control.get("velocity")
-        , distance = this.control.get("distance.x")
+      var velocity = control.get("eye_velocity")
+        , distance = control.get("eye_distance.x")
       if(velocity)
         this.arcball.pan(velocity.x, velocity.y)
       if(distance)
         this.arcball.distance = distance
 
       this.arcball.getModelView(this.modelview)
-      // mat4.lookAt([ 0, 0, 5 ], [ 0, 0, 0 ], [ 0, 1, 0 ], this.modelview)
       mat4.perspective(fov, this.aspect, clip_near, clip_far, this.projection)
       mat4.multiply(this.projection, this.modelview, this.mvp)
 
@@ -133,67 +136,101 @@ exports.create = function() {
       gl.disable(gl.BLEND)
 
 
-      // Copy previous step
+      toy.editors.each(function (editor) {
 
-      toy.fbo_prev_write.bind()
+        // Ignore low-contribution shaders
+        if((editor.id == "left" && shader_mix > 0.99) ||
+           (editor.id == "right" && shader_mix < 0.01))
+          return;
 
-        toy.fbo_read.textures[0].bind(0) // Position
-        toy.vbo_plane
-          .setProg(toy.prog_copy.use({ u_position: 0 }))
-          .draw()
-
-        toy.fbo_write.textures[0].unbind()
-
-      toy.fbo_prev_write.unbind()
+        var fbo = toy.fbo_groups[editor.id]
 
 
-      // Render particle step pass
+        // Copy previous step
 
-      if(toy.editor.program.linked) {
-        toy.fbo_write.bind()
+        fbo.prev_write.bind()
 
-          toy.fbo_read.textures[0].bind(0)      // Position
-          toy.fbo_prev_read.textures[0].bind(1) // Previous position
-          toy.tex_index.bind(2)
-          toy.fbo_shadow_depth.textures[0].bind(3)
-
-          toy.editor.program.use({
-            position:           0
-          , position_prev:      1
-          , index:              2
-          , shadow_depth:       3
-          , light_mvp:          this.light_mvp
-          , resolution:         res
-          , oneOverRes:         1.0 / res
-          , count:              res * res
-          , mousePos:           this.mouse_world_pos
-          , prevMousePos:       this.mouse_world_pos_prev
-          , screenMousePos:     this.mouse_pos
-          , prevScreenMousePos: this.mouse_pos_prev
-          , cameraPos:          this.camera_pos
-          , time:               time
-          , frame:              this.frame_num
-          })
-
+          fbo.read.textures[0].bind(0) // Position
           toy.vbo_plane
-            .setProg(toy.editor.program)
+            .setProg(toy.prog_copy.use({ u_position: 0 }))
             .draw()
 
-          toy.fbo_read.textures[0].unbind()
-          toy.fbo_prev_read.textures[0].unbind()
-          toy.tex_index.unbind()
-          toy.fbo_shadow_depth.textures[0].unbind()
+          fbo.read.textures[0].unbind()
 
-        toy.fbo_write.unbind()
-        toy.swap()
+        fbo.prev_write.unbind()
 
-        this.frame_num++
-      }
+
+        // Render particle step pass
+
+        if(editor.program.linked) {
+          fbo.write.bind()
+
+            fbo.read.textures[0].bind(0)      // Position
+            fbo.prev_read.textures[0].bind(1) // Previous position
+            toy.tex_index.bind(2)
+            toy.fbo_shadow_depth.textures[0].bind(3)
+
+            editor.program.use({
+              position:           0
+            , position_prev:      1
+            , index:              2
+            , shadow_depth:       3
+            , light_mvp:          self.light_mvp
+            , resolution:         res
+            , oneOverRes:         1.0 / res
+            , count:              res * res
+            , mousePos:           self.mouse_world_pos
+            , prevMousePos:       self.mouse_world_pos_prev
+            , screenMousePos:     self.mouse_pos
+            , prevScreenMousePos: self.mouse_pos_prev
+            , cameraPos:          self.camera_pos
+            , time:               time
+            , frame:              self.frame_num
+            })
+
+            toy.vbo_plane
+              .setProg(editor.program)
+              .draw()
+
+            fbo.read.textures[0].unbind()
+            fbo.prev_read.textures[0].unbind()
+            toy.tex_index.unbind()
+            toy.fbo_shadow_depth.textures[0].unbind()
+
+          fbo.write.unbind()
+          fbo.swap()
+        }
+
+      })
+
+      this.frame_num++
+
+
+      // Render mix pass
+
+      toy.fbo_mix.bind()
+
+        toy.fbo_groups["left"].read.textures[0].bind(0)
+        toy.fbo_groups["right"].read.textures[0].bind(1)
+
+        toy.vbo_plane
+          .setProg(toy.prog_mix.use({
+            u_position_left: 0
+          , u_position_right: 1
+          , u_mix: shader_mix
+          }))
+          .draw()
+
+        toy.fbo_groups["left"].read.textures[0].unbind()
+        toy.fbo_groups["right"].read.textures[0].unbind()
+
+      toy.fbo_mix.unbind()
 
 
       // Render shadow pass
 
-      if(+toy.editor.get("define_shadows")) {
+      if(+toy.editors.get("left").get("define_shadows") ||
+         +toy.editors.get("right").get("define_shadows")) {
         toy.fbo_shadow_depth.bind()
 
           gl.viewport(0, 0, res_shadow, res_shadow)
@@ -201,7 +238,7 @@ exports.create = function() {
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
           gl.enable(gl.DEPTH_TEST)
 
-          toy.fbo_read.textures[0].bind(0) // Position
+          toy.fbo_mix.textures[0].bind(0) // Position
 
           toy.prog_depth.use({
             u_position:   0
@@ -212,7 +249,7 @@ exports.create = function() {
 
           toy.vbo_particles.setProg(toy.prog_depth).draw()
 
-          toy.fbo_read.textures[0].unbind()
+          toy.fbo_mix.textures[0].unbind()
 
         toy.fbo_shadow_depth.unbind()
       }
@@ -225,7 +262,7 @@ exports.create = function() {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
       gl.enable(gl.DEPTH_TEST)
 
-      toy.fbo_read.textures[0].bind(0) // Position
+      toy.fbo_mix.textures[0].bind(0) // Position
 
       toy.prog_final.use({
         u_mvp:        this.mvp
@@ -235,7 +272,7 @@ exports.create = function() {
 
       toy.vbo_particles.setProg(toy.prog_final).draw()
 
-      toy.fbo_read.textures[0].unbind()
+      toy.fbo_mix.textures[0].unbind()
     }
 
   })

@@ -21,13 +21,13 @@ define(function(require) {
 
       // Init Subviews
 
-      this.editor_view = new ProgEditorView({ model: toy.editor })
-      this.editor_view.$el.appendTo(document.body)
-
-      this.help_view = new HelpOverlayView({ model: toy.help })
-      this.help_view.$el.appendTo(document.body)
-
-      this.link_view = new LinkOverlayView({ model: toy.link })
+      toy.editors.each(function (editor) {
+        var view = new ProgEditorView({
+          id: "prog-editor-" + editor.id,
+          model: editor
+        })
+        view.$el.appendTo(document.body)
+      })
     }
 
   })

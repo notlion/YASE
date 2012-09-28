@@ -19,6 +19,17 @@ body {
   width: 100%; height: 100%;
 }
 
+#prog-editor-right {
+  left: 50%;
+}
+.prog-editor {
+  width: 50%;
+
+  .CodeMirror {
+    min-width: 0;
+  }
+}
+
 .overlay {
   position: absolute;
   left: 0; top: 0;

@@ -50,6 +50,7 @@ define(function (require) {
 
     defaults: {
       open: false,
+      shader_id: 0,
       src_vertex: "",
       src_fragment: "",
       src_fragment_template: "",
@@ -63,6 +64,11 @@ define(function (require) {
           name: "toggle-open",
           title: "Toggle Code Open",
           icon: '<path d="M -7,0 L 7,0 M 0,-7 L 0,7"/>'
+        },
+        {
+          name: "save",
+          title: "Save",
+          hides_when_closed: true
         }
       ])
 
@@ -70,8 +76,16 @@ define(function (require) {
       this.program_tmp = new Embr.Program()
 
       this
-        // .on("change:src_vertex change:src_fragment", this.compile, this)
         .on("change:src_fragment_template", this.updateTemplateData, this)
+        .on("change:saved", function (self, saved) {
+          self.buttons.get("save").set({
+            title: saved ? "Saved" : "Save",
+            enabled: !saved
+          })
+        })
+        .on("change:shader_id", this.load, this)
+
+      this.buttons.get("save").on("click", this.save, this)
 
       this.updateTemplateData()
     },
@@ -133,8 +147,30 @@ define(function (require) {
       this.program = tmp
     },
 
+    load: function() {
+      var self = this
+      $.ajax({
+        url: "/shader/" + this.get("shader_id"),
+        type: "get",
+        success: function (res) {
+          self.set("src_fragment", res)
+          self.set("saved", true)
+        }
+      })
+    },
+
     save: function() {
-      this.trigger("save", this)
+      var self = this
+      $.ajax({
+        url: "/shader/" + this.get("shader_id"),
+        type: "post",
+        data: {
+          src: this.get("src_fragment")
+        },
+        success: function (res) {
+          self.set("saved", true)
+        }
+      })
     }
 
   })

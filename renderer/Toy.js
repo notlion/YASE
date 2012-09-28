@@ -2,8 +2,10 @@ var Backbone     = require("backbone")
   , _            = require("underscore")
   , fs           = require("fs")
   , path         = require("path")
+  , socketio     = require("socket.io")
   , Embr         = require("../public/lib/embr/src/embr")
   , RemoteEditor = require("./RemoteEditor")
+  , OscControl   = require("./OscControl")
 
 
 function loadTpl(filename) {
@@ -15,11 +17,44 @@ var src_copy_vertex    = loadTpl("copy.vsh")
   , src_copy_fragment  = loadTpl("copy.fsh")
   , src_step_vertex    = loadTpl("step.vsh")
   , src_step_fragment  = loadTpl("step.fsh")
+  , src_mix_fragment   = loadTpl("mix.fsh")
   , src_final_vertex   = loadTpl("final.vsh")
   , src_final_fragment = loadTpl("final.fsh")
   , src_depth_vertex   = loadTpl("depth.vsh")
   , src_depth_fragment = loadTpl("depth.fsh")
   , src_step_template  = loadTpl("step_template.fsh")
+
+
+function FboGroup(fmt) {
+  this.read = new Embr.Fbo()
+    .attach(new Embr.Texture(fmt))
+    .check()
+  this.write = new Embr.Fbo()
+    .attach(new Embr.Texture(fmt))
+    .check()
+  this.prev_read = new Embr.Fbo()
+    .attach(new Embr.Texture(fmt))
+    .check()
+  this.prev_write = new Embr.Fbo()
+    .attach(new Embr.Texture(fmt))
+    .check()
+}
+FboGroup.prototype = {
+  swap: function() {
+    var tmp = this.read
+    this.read = this.write
+    this.write = tmp
+    tmp = this.prev_read
+    this.prev_read = this.prev_write
+    this.prev_write = tmp
+  }
+, cleanup: function() {
+    this.read.cleanup()
+    this.write.cleanup()
+    this.prev_read.cleanup()
+    this.prev_write.cleanup()
+  }
+}
 
 
 module.exports = Backbone.Model.extend({
@@ -36,31 +71,62 @@ module.exports = Backbone.Model.extend({
 , initialize: function () {
     var self = this
 
-    this.editor = new RemoteEditor({
-      src_vertex: src_step_vertex,
-      src_fragment_template: src_step_template
+    this.io = socketio.listen(4000)
+    this.io.set("log level", 1)
+
+    var RemoteEditorCollection = Backbone.Collection.extend({
+      model: RemoteEditor
+    })
+
+    this.editors = new RemoteEditorCollection([
+      {
+        id: "left",
+        src_vertex: src_step_vertex,
+        src_fragment_template: src_step_template
+      },
+      {
+        id: "right",
+        src_vertex: src_step_vertex,
+        src_fragment_template: src_step_template
+      }
+    ])
+
+    this.control = new OscControl()
+
+    this.fbo_groups = {}
+
+    // Init Socket IO
+
+    this.io.sockets.on("connection", function (socket) {
+      self.editors.each(function (editor) {
+        editor.set("socket", socket)
+        self.control.on("change:shader_" + editor.id + ".x", function (control, data) {
+          for(var i = 0; i < data.length; i++) {
+            if(data[i] == 1) {
+              socket.emit("shader_id/" + editor.id, i)
+              break;
+            }
+          }
+        })
+      })
     })
 
     // Event Listeners
 
-    this.editor
-      .on("change:define_sim_res", function (editor, res) {
-        if(!isNaN(res) && res > 0)
-          self.set("fbo_res", +res)
-      })
-      .on("compiled", function (editor, compiled) {
-        console.log(compiled)
-      })
+    // this.editor
+    //   .on("change:define_sim_res", function (editor, res) {
+    //     if(!isNaN(res) && res > 0)
+    //       self.set("fbo_res", +res)
+    //   })
 
-    this
-      .on("change:context change:fbo_res", function () {
-        self.initGL()
-      })
+    this.on("change:context change:fbo_res", function () {
+      self.initGL()
+    })
   },
 
   initGL: function () {
     var self = this
-      , gl = Embr.wrapContextWithErrorChecks(this.get("context"))
+      , gl = this.get("context")
 
     Embr.setContext(gl)
 
@@ -74,6 +140,7 @@ module.exports = Backbone.Model.extend({
     this.prog_copy  = new Embr.Program(src_copy_vertex, src_copy_fragment).link()
     this.prog_final = new Embr.Program(src_final_vertex, src_final_fragment).link()
     this.prog_depth = new Embr.Program(src_depth_vertex, src_depth_fragment).link()
+    this.prog_mix   = new Embr.Program(src_copy_vertex, src_mix_fragment).link()
 
 
     var res = this.get("fbo_res")
@@ -111,23 +178,13 @@ module.exports = Backbone.Model.extend({
     }
     var fbo_fmt_position = _.extend(fbo_fmt, { data: position_data })
 
-    if(this.fbo_read)  this.fbo_read.cleanup()
-    if(this.fbo_write) this.fbo_write.cleanup()
+    this.editors.each(function (editor) {
+      var group = self.fbo_groups[editor.id]
+      if(group) group.cleanup()
+      self.fbo_groups[editor.id] = new FboGroup(fbo_fmt_position)
+    })
 
-    this.fbo_read = new Embr.Fbo()
-      .attach(new Embr.Texture(fbo_fmt_position))
-      .check()
-    this.fbo_write = new Embr.Fbo()
-      .attach(new Embr.Texture(fbo_fmt_position))
-      .check()
-
-    if(this.fbo_prev_read)  this.fbo_prev_read.cleanup()
-    if(this.fbo_prev_write) this.fbo_prev_write.cleanup()
-
-    this.fbo_prev_read = new Embr.Fbo()
-      .attach(new Embr.Texture(fbo_fmt_position))
-      .check()
-    this.fbo_prev_write = new Embr.Fbo()
+    this.fbo_mix = new Embr.Fbo()
       .attach(new Embr.Texture(fbo_fmt_position))
       .check()
 
@@ -172,22 +229,6 @@ module.exports = Backbone.Model.extend({
       .setAttr("a_texcoord", {
         data: [ 0, 0, 0, 1, 1, 0, 1, 1 ], size: 2
       })
-
-
-    // Events
-
-    this.editor.on("compile", function (program) {
-      self.vbo_plane.setProg(program)
-    })
-  }
-
-, swap: function () {
-    var tmp = this.fbo_read
-    this.fbo_read = this.fbo_write
-    this.fbo_write = tmp
-    tmp = this.fbo_prev_read
-    this.fbo_prev_read = this.fbo_prev_write
-    this.fbo_prev_write = tmp
   }
 
 , start: function () {

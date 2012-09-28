@@ -1,6 +1,5 @@
 var Backbone = require("backbone")
   , _        = require("underscore")
-  , socketio = require("socket.io")
   , Embr     = require("../public/lib/embr/src/embr")
 
 
@@ -44,7 +43,7 @@ function findRowColForStringIndex (str, index) {
 module.exports = Backbone.Model.extend({
 
   defaults: {
-    port: 4000
+    socket: null
   , src_vertex: ""
   , src_fragment: ""
   , src_fragment_template: ""
@@ -61,25 +60,22 @@ module.exports = Backbone.Model.extend({
     this
       .on("change:src_vertex change:src_fragment", this.compile, this)
       .on("change:src_fragment_template", this.updateTemplateData, this)
+      .on("change:socket", function (self, socket) {
+        socket
+          .on("src_fragment/" + self.id, function (data) {
+            self.set("src_fragment", data)
+          })
+        self
+          .on("change:errors", function (editor, errors) {
+            if(errors)
+              socket.emit("errors/" + self.id, errors)
+          })
+          .on("change:compiled", function (editor, compiled) {
+            socket.emit("compiled/" + self.id, compiled)
+          })
+      })
 
     this.updateTemplateData()
-
-    var io = this.io = socketio.listen(this.get("port"))
-
-    io.sockets.on("connection", function(socket) {
-      socket.on("src_fragment", function(data) {
-        self.set("src_fragment", data)
-      })
-      self
-        .on("change:errors", function (editor, errors) {
-          console.log("Sending:", errors)
-          if(errors)
-            socket.emit("errors", errors)
-        })
-        .on("change:compiled", function (editor, compiled) {
-          socket.emit("compiled", compiled)
-        })
-    })
   }
 
 , updateTemplateData: function () {
@@ -99,6 +95,9 @@ module.exports = Backbone.Model.extend({
       , ft = this.get("src_fragment_template")
 
     if(vs && fs) {
+      // HACK: Kill shadows by default.
+      this.set("define_shadows", 0)
+
       _.each(extractShaderDefines(fs), function(value, name) {
         if(_.isNumber(value))
           value = +value
@@ -138,6 +137,10 @@ module.exports = Backbone.Model.extend({
     var tmp = this.program_tmp
     this.program_tmp = this.program
     this.program = tmp
+  }
+
+, loadShaderSource: function(src) {
+
   }
 
 })

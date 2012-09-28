@@ -2,6 +2,8 @@
 
 var express = require('express')
   , cp      = require('child_process')
+  , fs      = require('fs')
+  , path    = require('path')
 
 
 // Spawn Plask Subprocess.
@@ -35,6 +37,25 @@ app.configure('production', function() {
 
 app.get('/', function (req, res) {
   res.render('index', { env: app.settings.env, layout: false })
+})
+
+app.post('/shader/:id', function (req, res) {
+  var filename = path.join(__dirname, 'shaders', req.params.id + '.fsh')
+  if(req.body.src) {
+    fs.writeFile(filename, req.body.src, function (err) {
+      if(err)
+        res.send(500)
+      else
+        res.send(200)
+    })
+  }
+  else {
+    res.send(500)
+  }
+})
+app.get('/shader/:id', function (req, res) {
+  var filename = path.join(__dirname, 'shaders', req.params.id + '.fsh')
+  res.sendfile(filename)
 })
 
 
