@@ -1,25 +1,30 @@
-var _          = require("underscore")
-  , plask      = require("plask")
-  , Embr       = require("../public/lib/embr/src/embr")
-  , Toy        = require("./Toy")
-  , Arcball    = require("./Arcball")
+var _       = require("underscore")
+  , plask   = require("plask")
+  , Embr    = require("../public/lib/embr/src/embr")
+  , Toy     = require("./Toy")
+  , Arcball = require("./Arcball")
 
 
 var glMatrix = require("../public/lib/gl-matrix")
   , mat4 = glMatrix.mat4
   , vec3 = glMatrix.vec3
 
-exports.create = function() {
+var default_settings = {
+  width:       1280
+, height:      720
+, type:        '3d'
+, vsync:       true
+, multisample: true
+, fullscreen:  false
+, position:    { x: 0, y: -0 }
+}
+
+exports.create = function (settings) {
+  if (!settings) settings = {};
+
   return plask.simpleWindow({
 
-    settings: {
-      width: 1280
-    , height: 720
-    , type: '3d'
-    , vsync: false
-    , fullscreen: true
-    , position: { x: 1440, y: -0 }
-    }
+    settings: _.defaults(settings, default_settings)
 
   , init: function() {
       var self = this
@@ -215,9 +220,9 @@ exports.create = function() {
 
         toy.vbo_plane
           .setProg(toy.prog_mix.use({
-            u_position_left: 0
+            u_position_left:  0
           , u_position_right: 1
-          , u_mix: shader_mix
+          , u_mix:            shader_mix
           }))
           .draw()
 

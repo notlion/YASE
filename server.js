@@ -1,34 +1,32 @@
-#!/usr/bin/env node
+#!/usr/bin/env plask
 
 var express = require('express')
-  , cp      = require('child_process')
   , fs      = require('fs')
   , path    = require('path')
+  , ToyView = require('./renderer/ToyView')
 
 
-// Spawn Plask Subprocess.
+// Open Render Window.
 
-var plask = cp.spawn('plask', [ './renderer.js' ])
-
-plask.stdout.pipe(process.stdout)
-plask.stderr.pipe(process.stderr)
+var view = ToyView.create()
+view.start()
 
 
 // Create Server.
 
 var app = express()
 
-app.configure(function() {
+app.configure(function () {
   app.use(express.static(__dirname + '/public'))
   app.use(express.bodyParser())
   app.use(express.logger())
   app.set('view engine', 'ejs')
   app.set('views', __dirname + '/views')
 })
-app.configure('development', function() {
+app.configure('development', function () {
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }))
 })
-app.configure('production', function() {
+app.configure('production', function () {
   app.use(express.errorHandler())
 })
 
@@ -63,6 +61,6 @@ app.get('/shader/:id', function (req, res) {
 
 var port = process.env.PORT || 3000
 
-app.listen(port, function() {
+app.listen(port, function () {
   console.log('Listening on ' + port)
 })
