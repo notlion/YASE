@@ -12,12 +12,14 @@
   shim: {
     "backbone": {
       deps: [ "underscore", "zepto" ],
-      exports: function () {
+      exports: 'Backbone',
+      init: function () {
         return this.Backbone.noConflict();
       }
     },
     "underscore": {
-      exports: function () {
+      exports: '_',
+      init: function () {
         return this._.noConflict();
       }
     },
