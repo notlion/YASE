@@ -28,7 +28,9 @@ define(function (require) {
       , initial_rotation = quat4.create()
       , distance = 5, distance_min = 0.1, distance_max = 15
       , mouse_down_x, mouse_down_y
-      , invert_x = false, invert_y = true
+      , touch_id = -1
+      , invert_x = false
+      , invert_y = true
       , arcball = this;
 
     function getCanvasToSpherePnt (x, y) {
@@ -51,10 +53,75 @@ define(function (require) {
     }
 
     function onMouseDrag (e) {
-      var off = getElementOffset(canvas)
-        , x = e.clientX - off.x
-        , y = e.clientY - off.y;
+      var off = getElementOffset(canvas);
+      var x = e.clientX - off.x;
+      var y = e.clientY - off.y;
+      arcball.drag(x, y);
+    }
 
+    function onMouseUp (e) {
+      document.removeEventListener("mousemove", onMouseDrag);
+      document.removeEventListener("mouseup", onMouseUp);
+    }
+
+    function onMouseDown (e) {
+      e.preventDefault();
+      arcball.down(e.clientX, e.clientY);
+      document.addEventListener("mousemove", onMouseDrag);
+      document.addEventListener("mouseup", onMouseUp, true);
+    }
+
+    function onMouseWheel (e) {
+      e.preventDefault();
+      // Gecko scroll events expose wheelDelta as detail
+      var delta = e.detail * -2 || e.wheelDelta;
+      arcball.setDistance(distance - delta * 0.001);
+      arcball.trigger("change:distance", this, distance);
+    }
+
+    function onTouchStart (e) {
+      if (touch_id < 0) {
+        e.preventDefault();
+        var touch = e.changedTouches[0];
+        touch_id = touch.identifier;
+        arcball.down(touch.clientX, touch.clientY);
+        canvas.addEventListener("touchmove", onTouchMove);
+        canvas.addEventListener("touchend", onTouchEnd);
+        canvas.addEventListener("touchcancel", onTouchEnd);
+        canvas.addEventListener("touchleave", onTouchEnd);
+      }
+    }
+
+    function onTouchMove (e) {
+      for(var touch, i = e.changedTouches.length; --i >= 0;) {
+        touch = e.changedTouches[i];
+        if(touch.identifier === touch_id) {
+          arcball.drag(touch.clientX, touch.clientY);
+          break;
+        }
+      }
+    }
+
+    function onTouchEnd (e) {
+      for(var touch, i = e.changedTouches.length; --i >= 0;) {
+        touch = e.changedTouches[i];
+        if(touch.identifier === touch_id) {
+          touch_id = -1;
+          canvas.removeEventListener("touchmove", onTouchMove);
+          canvas.removeEventListener("touchend", onTouchEnd);
+          canvas.removeEventListener("touchcancel", onTouchEnd);
+          canvas.removeEventListener("touchleave", onTouchEnd);
+        }
+      }
+    }
+
+    this.down = function (x, y) {
+      mouse_down_x = x;
+      mouse_down_y = y;
+      quat4.set(rotation, initial_rotation);
+    }
+
+    this.drag = function (x, y) {
       var pos_from = getCanvasToSpherePnt(mouse_down_x, mouse_down_y);
       var pos_to = getCanvasToSpherePnt(x, y);
       var axis = vec3.cross(pos_to, pos_from, vec3.create());
@@ -67,28 +134,6 @@ define(function (require) {
       quat4.normalize(rotation);
 
       arcball.trigger("change:rotation", this, rotation);
-    }
-
-    function onMouseUp (e) {
-      document.removeEventListener("mousemove", onMouseDrag);
-      document.removeEventListener("mouseup", onMouseUp);
-    }
-
-    function onMouseDown (e) {
-      e.preventDefault();
-      mouse_down_x = e.clientX;
-      mouse_down_y = e.clientY;
-      quat4.set(rotation, initial_rotation);
-      document.addEventListener("mousemove", onMouseDrag);
-      document.addEventListener("mouseup", onMouseUp, true);
-    }
-
-    function onMouseWheel (e) {
-      e.preventDefault();
-      // Gecko scroll events expose wheelDelta as detail
-      var delta = e.detail * -2 || e.wheelDelta;
-      arcball.setDistance(distance - delta * 0.001);
-      arcball.trigger("change:distance", this, distance);
     }
 
     this.setDistance = function (d) {
@@ -113,6 +158,7 @@ define(function (require) {
     };
 
     canvas.addEventListener("mousedown", onMouseDown);
+    canvas.addEventListener("touchstart", onTouchStart);
     canvas.addEventListener("mousewheel", onMouseWheel);
 
     // Gecko has it's own mouse wheel event
