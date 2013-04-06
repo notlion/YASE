@@ -24,13 +24,16 @@ void stepPos(in float i, in vec4 prevPos, in vec4 pos, out vec4 nextPos) {
   float srs = sqrt(s);
 
 	vec3 c = rand3(j) * srs * 2.;
-  float rad = t - .5;
+  float rad = 1. + mod(k * .06, 1.) * 0.25;
   vec3 p = vec3(rad, 0., 0.);
-  float tm = time * .25;
+  float tm = time * .1;
+  rZ(p, rand(j + 1.) * PI * 2. + tm - k * 0.001);
+  rX(p, rand(j) * PI * 2.);
+  rY(p, rand(j + 10.) * PI * 2.);
 	p *= mix(.1, .75, srs);
   p += c;
   rZ(p, tm * .1 * (mod(j, 2.) - .5));
 
   nextPos.xyz = p;
- 	nextPos.w = rand(j) * (1. - cos(t * PI * 2.));
+ 	nextPos.w = (1. - t) * (1. - s);
 }

@@ -1,27 +1,86 @@
+#define sim_res 512
+
+const float energy = 0.75;
+const float attraction = 0.05;
+const float flowPower = 0.002;
+const float spinPower = 0.001;
+
+void rX(inout vec3 p, float t) {
+	float c = cos(t), s = sin(t); vec3 q = p;
+	p.y = c * q.y - s * q.z;
+	p.z = s * q.y + c * q.z;
+}
+void rY(inout vec3 p, float t) {
+	float c = cos(t), s = sin(t); vec3 q = p;
+	p.x = c * q.x + s * q.z;
+	p.z = -s * q.x + c * q.z;
+}
+void rZ(inout vec3 p, float t) {
+	float c = cos(t), s = sin(t); vec3 q = p;
+	p.x = c * q.x - s * q.y;
+	p.y = s * q.x + c * q.y;
+}
+
+float sdBox(vec3 p, vec3 b) {
+  vec3 d = abs(p) - b;
+  return min(max(d.x, max(d.y, d.z)), 0.) + length(max(d, 0.));
+}
+float sdSphere(vec3 p, float s) {
+  return length(p) - s;
+}
+float opU(float d1, float d2) { return min(d1,d2); }
+float opS(float d1, float d2) { return max(-d1, d2); }
+float opI(float d1, float d2) { return max(d1,d2); }
+
+// Change this.
+float dist(vec3 p) {
+  vec3 ip = floor(p);
+  vec3 fp = fract(p) - .5;
+  float tm = time * .1;
+  float tp = PI * 2.;
+  fp += rand3(ip.x + ip.y + ip.z) * 0.1;
+  rX(fp, rand(ip.x) * tp + tm);
+  rY(fp, rand(ip.y) * tp + tm);
+  rZ(fp, rand(ip.z) * tp + tm);
+  return sdBox(fp, vec3(0.2));
+}
+
+vec3 grad(vec3 p, float d) {
+  vec3 x = vec3(d, 0., 0.), y = vec3(0., d, 0.), z = vec3(0., 0., d);
+  return vec3(
+    dist(p + x) - dist(p - x),
+    dist(p + y) - dist(p - y),
+    dist(p + z) - dist(p - z)
+  ) / (2. * d);
+}
+
+vec3 flow(vec3 p, float d) {
+  vec3 x = vec3(d, 0., 0.), y = vec3(0., d, 0.), z = vec3(0., 0., d);
+  return vec3(
+    noise(p + x) - noise(p - x),
+    noise(p + y) - noise(p - y),
+    noise(p + z) - noise(p - z)
+  ) / (2. * d);
+}
+
 void stepPos(in float i, in vec4 prevPos, in vec4 pos, out vec4 nextPos) {
-  float t = 6.28*i / count;
+	// Clear
+  if (frame == 0.) { nextPos = vec4(0.); return; }
+  if (frame == 1.) { nextPos = vec4(rand3(i) * 0.2, 1.); return; }
 
-  // 3-foil:
-  // nextPos.xyz = 2.0*vec3( cos(2.*t)*(2.+cos(3.*t)), (2. + cos(3.*t))*sin(2.*t), sin(3.*t));
+  float t = i / count;
+  vec3 p = pos.xyz;
+  vec3 vel = (p - prevPos.xyz) * energy;
 
-  // 8-knot:
-  nextPos.xyz = vec3(
-  cos(3.0*t)*(2.+cos(2.*t)),
-  sin(3.0*t)*(2.+cos(2.*t)),
-  sin(4.*t));
+  vec3 g = grad(p, 0.01);
+  float lg = length(g);
+  float phi = dist(p);
+	vel -= attraction * phi * g / (lg * lg);
 
-  float l = 0.5;
-  float r = 0.5;
+  //vel += vec3(-p.y, p.x, 0.) * spinPower;
+  vel += flowPower * flow(p + t * 100. + time * 0.25, 0.01) * 0.05;
+  vel += rand3(i + time) * 0.0005;
 
-  float x = mod(time/15.0+(i/count),1.0)-0.5; x = x*x;
-  float s = exp(-x/0.0004)*l+0.;
-   x = mod(time/10.0+0.5+(i/count),1.0)-0.5; x = x*x;
-  s+= exp(-x/0.0004)*r;
-  vec3 N = (0.05+0.5*s)*rand3(i+mod(time,1.0));
-  nextPos.xyz += N;
-  N = normalize(N); // not really the normal, but close enough...
-  vec3 L = normalize(vec3(0.0,0.0,1.0));
-  vec3 H = normalize(cameraPos+L); // doesnt work
-  nextPos.w = 0.1+0.5*clamp(dot(N,L),0.,1.0)
-    +0.9*clamp(pow(max(dot(N,L),0.0),50.0),0.0,1.0);
+  nextPos.xyz = p + vel;
+  nextPos.w = abs(phi) * 80.;
 }

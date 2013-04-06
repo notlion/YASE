@@ -1,40 +1,43 @@
-vec3 spring(in vec3 a, in vec3 b, in float len, in float power) {
-  vec3 o = b - a;
-  float m = length(o) + 0.00001;
-  return (o / m) * power * (m - len);
+void rX(inout vec3 p, float t) {
+	float c = cos(t), s = sin(t); vec3 q = p;
+	p.y = c * q.y - s * q.z;
+	p.z = s * q.y + c * q.z;
+}
+void rY(inout vec3 p, float t) {
+	float c = cos(t), s = sin(t); vec3 q = p;
+	p.x = c * q.x + s * q.z;
+	p.z = -s * q.x + c * q.z;
+}
+void rZ(inout vec3 p, float t) {
+	float c = cos(t), s = sin(t); vec3 q = p;
+	p.x = c * q.x - s * q.y;
+	p.y = s * q.x + c * q.y;
+}
+
+vec3 grad(vec3 p, float d) {
+  vec3 x = vec3(d, 0., 0.), y = vec3(0., d, 0.), z = vec3(0., 0., d);
+  return vec3(
+    noise(p + x) - noise(p - x),
+    noise(p + y) - noise(p - y),
+    noise(p + z) - noise(p - z)
+  ) / (2. * d);
 }
 
 void stepPos(in float i, in vec4 prevPos, in vec4 pos, out vec4 nextPos) {
-	float	n = 5000.;
-  float t = i / count, noc = n / count;
-  float g = floor(t * n), gt = fract(t * n), omgt = 1. - gt;
+	float n = 128.;
+  float e = floor(count / n);
+  float j = floor(i / e);
+  float k = mod(i, e);
+  float t = k / e;
+  float s = j / n;
 
-	int ci = int(count), ii = int(i);
+	vec3 c = vec3(0.);//rand3(j) * sqrt(rand(j));
+  float rad = .05 + s + mod(k * .1, 1.) * s * 0.4;
+  vec3 p = vec3(rad, 0., 0.);
+  rZ(p, rand(j + 1.) * PI * 2. - k * (1.1 - s) * 0.001 + time * 0.1);
+  rX(p, rand(j) * PI * 2.);
+  rY(p, rand(j + 10.) * PI * 2.);
 
-  // Step
-  vec3 np = pos.xyz + (pos.xyz - prevPos.xyz) * 0.9;
-
-	// Spring
-  float jf, pwr = .01, len = 1. / (count / n) * 0.25;
-  vec3 p;
-  for(int j = 1; j < 8; ++j) {
-    jf = float(j);
-    if(ii - j > 0 && floor((i - jf) * noc) == g) {
-      p = getPos(i - jf).xyz;
-    	np += spring(pos.xyz, p, len * jf, pwr);
-    }
-    if(ii + j < ci - 1 && floor((i + jf) * noc) == g) {
-      p = getPos(i + jf).xyz;
-    	np += spring(pos.xyz, p, len * jf, pwr);
-    }
-  }
-
-  // Turbulence
-  vec3 npos = pos.xyz + (time + gt) * 0.2;
-  np += vec3(noise(npos), noise(npos + 15.), noise(npos + 18.)) * 0.001;
-
-	float r = 10.;
-
-  nextPos.xyz = mix(np, rand3(g) * rand(g) * r, gt * 0.001);
-  nextPos.w = gt * (1. - (length(nextPos.xyz) / r));
+  nextPos.xyz = p + c;
+ 	nextPos.w = 1. - t - length(p) * .5;
 }
