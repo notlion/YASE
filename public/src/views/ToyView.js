@@ -122,7 +122,7 @@ define(function (require) {
     },
 
     layout: function () {
-      var dpr = window.devicePixelRatio || 1;
+      var dpr = 1; //window.devicePixelRatio || 1;
       var sc = +this.model.editor.get("define_pixel_scale") || dpr;
       var w = this.el.width = this.el.clientWidth * sc;
       var h = this.el.height = this.el.clientHeight * sc;
