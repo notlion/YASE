@@ -1,5 +1,7 @@
 #!/usr/bin/env plask
 
+'use strict';
+
 var express = require('express')
   , fs      = require('fs')
   , path    = require('path')

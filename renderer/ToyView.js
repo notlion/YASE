@@ -1,3 +1,5 @@
+'use strict';
+
 var _       = require("underscore")
   , plask   = require("plask")
   , Embr    = require("../public/lib/embr/src/embr")
@@ -40,11 +42,6 @@ exports.create = function (settings) {
       this.camera_pos = vec3.create()
 
       this.arcball = new Arcball()
-
-      var sc = toy.get("shadow_volume_scale")
-      this.light_projection = mat4.ortho(-sc, sc, -sc, sc, -sc, sc)
-      this.light_modelview = mat4.identity()
-      this.light_mvp = mat4.multiply(this.light_projection, this.light_modelview, mat4.create())
 
 
       // Assign event listeners
@@ -104,9 +101,7 @@ exports.create = function (settings) {
         , control = toy.control
         , time = (Date.now() - this.start_time) / 1000
         , res = toy.get("fbo_res")
-        , res_shadow = toy.get("fbo_res_shadow")
-        , shadow_volume_scale = toy.get("shadow_volume_scale")
-        , point_size = 2//+toy.editor.get("define_point_size") || 2
+        , point_size = 2
         , clip_near = 0.1
         , clip_far = 100.0
         , fov = control.get("fov.x")
@@ -173,14 +168,11 @@ exports.create = function (settings) {
             fbo.read.textures[0].bind(0)      // Position
             fbo.prev_read.textures[0].bind(1) // Previous position
             toy.tex_index.bind(2)
-            toy.fbo_shadow_depth.textures[0].bind(3)
 
             editor.program.use({
               position:           0
             , position_prev:      1
             , index:              2
-            , shadow_depth:       3
-            , light_mvp:          self.light_mvp
             , resolution:         res
             , oneOverRes:         1.0 / res
             , count:              res * res
@@ -200,7 +192,6 @@ exports.create = function (settings) {
             fbo.read.textures[0].unbind()
             fbo.prev_read.textures[0].unbind()
             toy.tex_index.unbind()
-            toy.fbo_shadow_depth.textures[0].unbind()
 
           fbo.write.unbind()
           fbo.swap()
@@ -230,34 +221,6 @@ exports.create = function (settings) {
         toy.fbo_groups["right"].read.textures[0].unbind()
 
       toy.fbo_mix.unbind()
-
-
-      // Render shadow pass
-
-      if(+toy.editors.get("left").get("define_shadows") ||
-         +toy.editors.get("right").get("define_shadows")) {
-        toy.fbo_shadow_depth.bind()
-
-          gl.viewport(0, 0, res_shadow, res_shadow)
-          gl.clearColor(0, 0, 0, 1)
-          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-          gl.enable(gl.DEPTH_TEST)
-
-          toy.fbo_mix.textures[0].bind(0) // Position
-
-          toy.prog_depth.use({
-            u_position:   0
-          , u_projection: this.light_projection
-          , u_modelview:  this.light_modelview
-          , u_point_size: 1.0
-          })
-
-          toy.vbo_particles.setProg(toy.prog_depth).draw()
-
-          toy.fbo_mix.textures[0].unbind()
-
-        toy.fbo_shadow_depth.unbind()
-      }
 
 
       // Render view pass

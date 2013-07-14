@@ -1,3 +1,5 @@
+'use strict';
+
 var Backbone     = require("backbone")
   , _            = require("underscore")
   , fs           = require("fs")
@@ -100,14 +102,15 @@ module.exports = Backbone.Model.extend({
     this.io.sockets.on("connection", function (socket) {
       self.editors.each(function (editor) {
         editor.set("socket", socket)
-        self.control.on("change:shader_" + editor.id + ".x", function (control, data) {
+        function onShaderChange(control, data) {
           for(var i = 0; i < data.length; i++) {
             if(data[i] == 1) {
               socket.emit("shader_id/" + editor.id, i)
               break;
             }
           }
-        })
+        }
+        self.control.on("change:shader_" + editor.id + ".x", onShaderChange);
       })
     })
 
@@ -130,17 +133,24 @@ module.exports = Backbone.Model.extend({
 
     Embr.setContext(gl)
 
-    if(gl.getExtension && !(this.ext_oes_float = gl.getExtension("OES_texture_float")))
+    if (
+      gl.getExtension &&
+      !(this.ext_oes_float = gl.getExtension("OES_texture_float"))
+    ) {
       throw "Float textures not supported :("
       // TODO: Implement some better UI to notify this happened.
-
+    }
 
     // Create shader programs
 
-    this.prog_copy  = new Embr.Program(src_copy_vertex, src_copy_fragment).link()
-    this.prog_final = new Embr.Program(src_final_vertex, src_final_fragment).link()
-    this.prog_depth = new Embr.Program(src_depth_vertex, src_depth_fragment).link()
-    this.prog_mix   = new Embr.Program(src_copy_vertex, src_mix_fragment).link()
+    this.prog_copy  = new Embr.Program(src_copy_vertex, src_copy_fragment)
+      .link()
+    this.prog_final = new Embr.Program(src_final_vertex, src_final_fragment)
+      .link()
+    this.prog_depth = new Embr.Program(src_depth_vertex, src_depth_fragment)
+      .link()
+    this.prog_mix   = new Embr.Program(src_copy_vertex, src_mix_fragment)
+      .link()
 
 
     var res = this.get("fbo_res")

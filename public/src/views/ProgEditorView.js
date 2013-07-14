@@ -1,6 +1,6 @@
 define(function (require) {
 
-  "use strict"
+  'use strict';
 
   var Backbone   = require("backbone")
     , _          = require("underscore")
@@ -13,7 +13,7 @@ define(function (require) {
 
 
   var init_template = [
-    '<div class="code-container" style="opacity:0"></div>',
+    '<div class="code-container" style="opacity: 0;"></div>',
     '<div class="ui"></div>'
   ].join("")
 
@@ -43,19 +43,7 @@ define(function (require) {
           self.markErrors(errors)
         })
         .on("change:open", function(model, open) {
-          var d = 200, e = "ease", vis = "visibility"
-            , sel = self.$el.find(".code-container, .hides-when-closed")
-          self.$el.find(".toggle-open .rotate").animate({
-            rotate: open ? "45deg" : "0"
-          }, d, e)
-          sel.animate({ opacity: open ? 1 : 0 }, d, e, function() {
-            if(!self.model.get("open"))
-              sel.hide()
-          })
-          if(open) {
-            sel.show()
-            self.cm_code.refresh()
-          }
+          self.updateOpen();
         })
         .on("change:src_fragment", function(model, src) {
           if(src != self.cm_code.getValue())
@@ -80,11 +68,33 @@ define(function (require) {
 
       this.render()
 
-      self.$el.find(".code-container, .hides-when-closed").hide()
+      // self.$el.find(".code-container, .hides-when-closed").hide()
     },
 
     toggleOpen: function() {
       this.model.set("open", !this.model.get("open"))
+    },
+
+    updateOpen: function() {
+      var d = 200, e = "ease"
+        , sel = this.$el.find(".code-container, .hides-when-closed")
+        , open = this.model.get('open')
+        , self = this;
+      this.$el.find(".toggle-open .rotate").animate({
+        rotate: open ? "45deg" : "0"
+      }, d, e)
+      sel.animate({ opacity: open ? 1 : 0 }, d, e, function() {
+        if (!self.model.get("open")) {
+          sel.hide()
+        }
+      })
+      if (open) {
+        sel.show()
+        // Showing does not take effect immediately, so put this on the queue.
+        setTimeout(function() {
+          self.cm_code.refresh();
+        }, 0);
+      }
     },
 
     getProg: function() {
@@ -109,8 +119,7 @@ define(function (require) {
 
     clearErrorMarks: function() {
       var mark
-      while(mark = this.cm_error_marks.pop())
-        mark.clear()
+      while(mark = this.cm_error_marks.pop()) mark.clear()
     },
 
     render: function() {
@@ -139,7 +148,8 @@ define(function (require) {
         this.append(new ProgEditorButtonView({ model: b }).render().el)
       }, this.$el.find(".ui"))
 
-      this.updateCode()
+      this.updateCode();
+      this.updateOpen();
     }
 
   })

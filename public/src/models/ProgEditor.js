@@ -49,7 +49,7 @@ define(function (require) {
   var ProgEditor = Backbone.Model.extend({
 
     defaults: {
-      open: false,
+      open: true,
       shader_id: 0,
       src_vertex: "",
       src_fragment: "",

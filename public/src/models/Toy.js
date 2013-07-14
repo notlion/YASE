@@ -9,11 +9,11 @@ define(function (require) {
 
     , Params = require("src/params")
 
-    , ProgEditor  = require("src/models/ProgEditor")
+    , ProgEditor = require("src/models/ProgEditor")
 
-    , src_step_vertex    = require("text!template/step.vsh")
-    , src_step_fragment  = require("text!template/step.fsh")
-    , src_step_template  = require("text!template/step_template.fsh");
+    , src_step_vertex   = require("text!template/step.vsh")
+    , src_step_fragment = require("text!template/step.fsh")
+    , src_step_template = require("text!template/step_template.fsh");
 
 
   var Toy = Backbone.Model.extend({
