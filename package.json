@@ -1,7 +1,7 @@
 {
   "version": "0.0.1",
   "scripts": {
-    "start": "app.js"
+    "start": "server.js"
   },
   "engines": {
     "plask": "0.9.x"
@@ -12,7 +12,8 @@
     "requirejs": "2.1.5",
     "backbone": "0.9.2",
     "underscore": "1.4.4",
-    "socket.io": "0.9.13"
+    "socket.io": "0.9.13",
+    "plask-stats": "0.0.1"
   },
   "name": "particle-shadertoy"
 }

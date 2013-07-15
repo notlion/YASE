@@ -2,6 +2,7 @@
 
 var _       = require("underscore")
   , plask   = require("plask")
+  , stats   = require("plask-stats")
   , Embr    = require("../public/lib/embr/src/embr")
   , Toy     = require("./Toy")
   , Arcball = require("./Arcball")
@@ -16,7 +17,7 @@ var default_settings = {
 , height:      720
 , type:        '3d'
 , vsync:       true
-, multisample: true
+, multisample: false
 , fullscreen:  false
 , position:    { x: 0, y: -0 }
 }
@@ -78,6 +79,10 @@ exports.create = function (settings) {
       })
 
       this.layout()
+
+
+      // Init Stats
+      this.stats = new stats.Stats(100, 60).open();
     }
 
   , layout: function() {
@@ -101,8 +106,8 @@ exports.create = function (settings) {
         , control = toy.control
         , time = (Date.now() - this.start_time) / 1000
         , res = toy.get("fbo_res")
-        , point_size = 2
-        , clip_near = 0.1
+        , point_size = 0.001
+        , clip_near = 0.01
         , clip_far = 100.0
         , fov = control.get("fov.x")
         , shader_mix = control.get("shader_mix.x")
@@ -233,14 +238,18 @@ exports.create = function (settings) {
       toy.fbo_mix.textures[0].bind(0) // Position
 
       toy.prog_final.use({
-        u_mvp:        this.mvp
-      , u_position:   0
-      , u_point_size: point_size
+        u_modelview:    this.modelview
+      , u_projection:   this.projection
+      , u_position:     0
+      , u_point_size:   point_size
+      , u_screen_width: this.width
       })
 
       toy.vbo_particles.setProg(toy.prog_final).draw()
 
       toy.fbo_mix.textures[0].unbind()
+
+      this.stats.update();
     }
 
   })

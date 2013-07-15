@@ -1,24 +1,35 @@
-#define sim_res 512
-
 const float energy = 0.75;
 const float attraction = 0.05;
 const float flowPower = 0.002;
 const float spinPower = 0.001;
 
+float hash( float n ) { return fract(sin(n)*43758.5453123); }
+float fnoise( in vec3 x ) {
+    vec3 p = floor(x);
+    vec3 f = fract(x);
+    f = f*f*(3.0-2.0*f);
+
+    float n = p.x + p.y*157.0 + 113.0*p.z;
+    return mix(mix(mix(hash(n+  0.0), hash(n+  1.0),f.x),
+                   mix(hash(n+157.0), hash(n+158.0),f.x),f.y),
+               mix(mix(hash(n+113.0), hash(n+114.0),f.x),
+                   mix(hash(n+270.0), hash(n+271.0),f.x),f.y),f.z);
+}
+
 void rX(inout vec3 p, float t) {
-	float c = cos(t), s = sin(t); vec3 q = p;
-	p.y = c * q.y - s * q.z;
-	p.z = s * q.y + c * q.z;
+  float c = cos(t), s = sin(t); vec3 q = p;
+  p.y = c * q.y - s * q.z;
+  p.z = s * q.y + c * q.z;
 }
 void rY(inout vec3 p, float t) {
-	float c = cos(t), s = sin(t); vec3 q = p;
-	p.x = c * q.x + s * q.z;
-	p.z = -s * q.x + c * q.z;
+  float c = cos(t), s = sin(t); vec3 q = p;
+  p.x = c * q.x + s * q.z;
+  p.z = -s * q.x + c * q.z;
 }
 void rZ(inout vec3 p, float t) {
-	float c = cos(t), s = sin(t); vec3 q = p;
-	p.x = c * q.x - s * q.y;
-	p.y = s * q.x + c * q.y;
+  float c = cos(t), s = sin(t); vec3 q = p;
+  p.x = c * q.x - s * q.y;
+  p.y = s * q.x + c * q.y;
 }
 
 float sdBox(vec3 p, vec3 b) {
@@ -34,15 +45,20 @@ float opI(float d1, float d2) { return max(d1,d2); }
 
 // Change this.
 float dist(vec3 p) {
+  rX(p, time * .025);
   vec3 ip = floor(p);
   vec3 fp = fract(p) - .5;
-  float tm = time * .1;
+  float tm = time * .2;
   float tp = PI * 2.;
-  fp += rand3(ip.x + ip.y + ip.z) * 0.1;
-  rX(fp, rand(ip.x) * tp + tm);
-  rY(fp, rand(ip.y) * tp + tm);
-  rZ(fp, rand(ip.z) * tp + tm);
-  return sdBox(fp, vec3(0.2));
+  float seed = ip.x + ip.y + ip.z;
+  fp += rand3(seed) * 0.15;
+  rX(fp, rand(ip.x) * tp + tm * (rand(ip.x) - .5));
+  rY(fp, rand(ip.y) * tp + tm * (rand(ip.y) - .5));
+  rZ(fp, rand(ip.z) * tp + tm * (rand(ip.z) - .5));
+  float sc = .2;
+  if (rand(seed) > .25)
+    return sdBox(fp, vec3(sc));
+  return sdSphere(fp, sc);
 }
 
 vec3 grad(vec3 p, float d) {
@@ -57,30 +73,32 @@ vec3 grad(vec3 p, float d) {
 vec3 flow(vec3 p, float d) {
   vec3 x = vec3(d, 0., 0.), y = vec3(0., d, 0.), z = vec3(0., 0., d);
   return vec3(
-    noise(p + x) - noise(p - x),
-    noise(p + y) - noise(p - y),
-    noise(p + z) - noise(p - z)
+    fnoise(p + x) - fnoise(p - x),
+    fnoise(p + y) - fnoise(p - y),
+    fnoise(p + z) - fnoise(p - z)
   ) / (2. * d);
 }
 
 void stepPos(in float i, in vec4 prevPos, in vec4 pos, out vec4 nextPos) {
-	// Clear
-  if (frame == 0.) { nextPos = vec4(0.); return; }
-  if (frame == 1.) { nextPos = vec4(rand3(i) * 0.2, 1.); return; }
+  float seed = i * 0.01;
 
   float t = i / count;
   vec3 p = pos.xyz;
   vec3 vel = (p - prevPos.xyz) * energy;
 
   vec3 g = grad(p, 0.01);
-  float lg = length(g);
   float phi = dist(p);
-	vel -= attraction * phi * g / (lg * lg);
+  if (phi > 0.) {
+    float lg = length(g);
+    vel -= attraction * phi * g / (lg * lg);
+  }
 
-  //vel += vec3(-p.y, p.x, 0.) * spinPower;
-  vel += flowPower * flow(p + t * 100. + time * 0.25, 0.01) * 0.05;
-  vel += rand3(i + time) * 0.0005;
+  vel += flowPower * flow(p - time * .1 + t * 100., .01) * .2;
+  vel += flowPower * flow(p *.1 + time * .25, .01) * .2;
+  vel += rand3(seed + time) * 0.0005;
+
+  vec3 lp = vec3(cos(time * .267), sin(time * 0.157), cos(time * .345)) * 2.;
 
   nextPos.xyz = p + vel;
-  nextPos.w = abs(phi) * 80.;
+  nextPos.w = max(0., -dot(g, normalize(p - lp))) + min(0., phi) * 10.;
 }

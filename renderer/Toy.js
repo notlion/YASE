@@ -62,7 +62,7 @@ FboGroup.prototype = {
 module.exports = Backbone.Model.extend({
 
   defaults: {
-    fbo_res: 512
+    fbo_res: 1024
   , fbo_res_shadow: 512
   , shadow_volume_scale: 10
   , rotation: [ 0, 0, 0, 1 ]

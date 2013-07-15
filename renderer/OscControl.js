@@ -1,3 +1,5 @@
+'use strict';
+
 var Backbone  = require('backbone')
   , DeepModel = require('./lib/deep-model')
   , osc       = require('./lib/omgosc')

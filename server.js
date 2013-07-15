@@ -11,10 +11,11 @@ var express = require('express')
 // Open Render Window.
 
 var view = ToyView.create({
-  width: 1024,
-  height: 768,
-  fullscreen: true,
-  position: { x: 1440, y: -0 }
+  width: 1280,
+  height: 720,
+  fullscreen: false,
+  multisample: true,
+  position: { x: 0, y: -0 }
 })
 view.start()
 
