@@ -5,7 +5,7 @@ var Backbone     = require("backbone")
   , fs           = require("fs")
   , path         = require("path")
   , socketio     = require("socket.io")
-  , Embr         = require("../public/lib/embr/src/embr")
+  , Embr         = require("embr")
   , RemoteEditor = require("./RemoteEditor")
   , OscControl   = require("./OscControl")
 
@@ -230,7 +230,7 @@ module.exports = Backbone.Model.extend({
     this.vbo_particles = new Embr.Vbo(gl.POINTS)
       .setAttr("a_texcoord", { size: 2, data: texcoord_data })
       .setAttr("a_index", { size: 1, data: index_data })
-      .setProg(this.prog_final)
+      .setProgram(this.prog_final)
 
     this.vbo_plane = new Embr.Vbo(gl.TRIANGLE_STRIP)
       .setAttr("a_position", {

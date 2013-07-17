@@ -3,7 +3,7 @@
 var _       = require("underscore")
   , plask   = require("plask")
   , stats   = require("plask-stats")
-  , Embr    = require("../public/lib/embr/src/embr")
+  , Embr    = require("embr")
   , Toy     = require("./Toy")
   , Arcball = require("./Arcball")
 
@@ -157,7 +157,7 @@ exports.create = function (settings) {
 
           fbo.read.textures[0].bind(0) // Position
           toy.vbo_plane
-            .setProg(toy.prog_copy.use({ u_position: 0 }))
+            .setProgram(toy.prog_copy.use({ u_position: 0 }))
             .draw()
 
           fbo.read.textures[0].unbind()
@@ -191,7 +191,7 @@ exports.create = function (settings) {
             })
 
             toy.vbo_plane
-              .setProg(editor.program)
+              .setProgram(editor.program)
               .draw()
 
             fbo.read.textures[0].unbind()
@@ -215,7 +215,7 @@ exports.create = function (settings) {
         toy.fbo_groups["right"].read.textures[0].bind(1)
 
         toy.vbo_plane
-          .setProg(toy.prog_mix.use({
+          .setProgram(toy.prog_mix.use({
             u_position_left:  0
           , u_position_right: 1
           , u_mix:            shader_mix
@@ -245,7 +245,7 @@ exports.create = function (settings) {
       , u_screen_width: this.width
       })
 
-      toy.vbo_particles.setProg(toy.prog_final).draw()
+      toy.vbo_particles.setProgram(toy.prog_final).draw()
 
       toy.fbo_mix.textures[0].unbind()
 

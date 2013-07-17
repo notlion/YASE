@@ -32,23 +32,16 @@
     },
     "codemirror-glsl": {
       deps: [ "codemirror" ]
-    },
-    "soundcloud": {
-      deps: [ "soundmanager" ],
-      exports: "SC"
     }
   },
   paths: {
     "text":            "lib/text",
-    "embr":            "lib/embr/src/embr",
-    "glmatrix":        "lib/gl-matrix",
+    "embr":            "lib/embr",
     "backbone":        "lib/backbone",
     "underscore":      "lib/underscore",
     "zepto":           "lib/zepto",
     "lzma":            "lib/lzma/lzma",
     "codemirror":      "lib/codemirror/codemirror",
-    "codemirror-glsl": "lib/codemirror/glsl",
-    "soundmanager":    "lib/soundmanager/soundmanager2-nodebug",
-    "soundcloud":      "lib/soundcloud-sdk"
+    "codemirror-glsl": "lib/codemirror/glsl"
   }
 }

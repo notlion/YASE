@@ -1,3 +1,0 @@
-[submodule "public/lib/embr"]
-	path = public/lib/embr
-	url = git://github.com/notlion/embr.git

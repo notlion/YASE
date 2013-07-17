@@ -4,14 +4,13 @@ define(function (require) {
 
   var Backbone = require("backbone")
     , _        = require("underscore")
-    , Embr     = require("embr")
 
     , ProgEditorButton = require("./ProgEditorButton")
 
 
   var shader_outlet_re = /^[ \t]*#define[ \t]+([\w_]*)[ \t]+(\S+)/gm
     , shader_error_re = /^ERROR: (\d+):(\d+): '([^']+)' : ([\w ]+)/gm
-    , template_include_re = /<%=\s*src_fragment\s*%>/
+    , template_include_re = /<%=\s*src_fragmembrent\s*%>/
 
 
   function extractShaderDefines (src) {
@@ -72,9 +71,6 @@ define(function (require) {
         }
       ])
 
-      this.program = new Embr.Program()
-      this.program_tmp = new Embr.Program()
-
       this
         .on("change:src_fragment_template", this.updateTemplateData, this)
         .on("change:saved", function (self, saved) {
@@ -99,47 +95,6 @@ define(function (require) {
         src_fragment_col: d.col
       })
     },
-
-    compile: _.debounce(function() {
-      var vs = this.get("src_vertex")
-        , fs = this.get("src_fragment")
-        , vt = this.get("src_vertex_template")
-        , ft = this.get("src_fragment_template")
-
-      if(vs && fs) {
-        _.each(extractShaderDefines(fs), function(value, name) {
-          if(_.isNumber(value))
-            value = +value
-          this.set("define_" + name, value)
-        }, this)
-
-        if(vt)
-          vs = _.template(vt, this.attributes)
-        if(ft)
-          fs = _.template(ft, this.attributes)
-
-        try {
-          this.program_tmp.compile(vs, fs)
-          this.program_tmp.link()
-        }
-        catch(err) {
-          var i, row = this.get("src_fragment_row")
-            , errs = parseShaderErrors(err)
-
-          for(i = 0; i < errs.length; ++i)
-            errs[i].line -= row
-
-          this.set("errors", errs)
-          this.set("compiled", false)
-
-          return
-        }
-
-        this.swap()
-        this.set("compiled", true)
-        this.trigger("compile", this.program)
-      }
-    }, 200),
 
     swap: function() {
       var tmp = this.program_tmp

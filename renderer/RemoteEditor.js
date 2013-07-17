@@ -1,6 +1,6 @@
 var Backbone = require("backbone")
   , _        = require("underscore")
-  , Embr     = require("../public/lib/embr/src/embr")
+  , Embr     = require("embr")
 
 
 var shader_outlet_re = /^[ \t]*#define[ \t]+([\w_]*)[ \t]+(\S+)/gm
