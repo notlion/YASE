@@ -14,7 +14,8 @@
     "underscore": "1.4.4",
     "socket.io": "0.9.13",
     "plask-stats": "0.0.1",
-    "embr": "0.0.4"
+    "embr": "0.0.5",
+    "gl-matrix": "git+https://github.com/toji/gl-matrix.git#v2.2.0"
   },
   "name": "particle-shadertoy"
 }

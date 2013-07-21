@@ -86,8 +86,5 @@ while (obj) {
 	}
 }" trigger_script="x" trigger_type="0" trigger="2" osc_message="/sendValues/test" midi_message="0x90,0x90,0,0" midi_target="-1" flag="1"/>
 </WINDOW>
-<WINDOW class="Monitor" text="log" x="82" y="22" width="506" height="411" id="13" state="241" group="0" font="tahoma,20,0" send="1" osc_target="-2" midi_target="-2" kbmouse_target="-2" color="1596013" label="1" precision="0" unit="" value="1">
-<VARIABLE name="value=120.35" send="0" osc_target="0" osc_trigger="1" osc_message="/log/value" midi_target="-1" midi_trigger="1" midi_message="0x90,0x90,0,0" midi_scale="0,16383" kbmouse_target="-1" kbmouse_trigger="1" kbmouse_message="0,0,0" kbmouse_scale="0,1,0,1"/>
-</WINDOW>
 </WINDOW>
 </JZML>

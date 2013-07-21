@@ -85,19 +85,10 @@ float noise(in float x, in float y, in float z) {
 
 // YASE Specific
 
-uniform sampler2D position, position_prev, index, amp_left, amp_right, shadow_depth;
-uniform mat4 light_mvp;
+uniform sampler2D position, position_prev, index;
 
 /** Camera position */
 uniform vec3 cameraPos;
-
-/** Current and previous mouse positions in world space */
-uniform vec3 mousePos;
-uniform vec3 prevMousePos;
-
-/** Current and previous mouse positions [0, 1] in screen space */
-uniform vec3 screenMousePos;
-uniform vec3 prevScreenMousePos;
 
 /** Seconds since the page was loaded or a track was played */
 uniform float time;
@@ -112,9 +103,6 @@ uniform float oneOverRes;
 /** Total number of particles */
 uniform float count;
 
-/** Position in the currently playing track [0, 1] if there is one */
-uniform float progress;
-
 /** Coordinate of the currently rendering fragment */
 varying vec2 texcoord;
 
@@ -122,19 +110,6 @@ varying vec2 texcoord;
 Circle diameter over circumference.
 */
 #define PI 3.141592653589793
-
-/**
-Amplitude of the left channel at frequency {x} [0, 1]
-*/
-float ampLeft(in float x) {
-  return texture2D(amp_left, vec2(x, 0.)).x;
-}
-/**
-Amplitude of the left channel at frequency {x} [0, 1]
-*/
-float ampRight(in float x) {
-  return texture2D(amp_right, vec2(x, 0.)).x;
-}
 
 /**
 Get the un-normalized texture coordinate for particle at index {i}
@@ -162,19 +137,6 @@ vec4 getPrevPos(in float i) {
 }
 vec4 getPrevPos(in int i) {
   return getPrevPos(float(i));
-}
-
-float getShadowDepth(in vec3 p) {
-  vec4 pt = light_mvp * vec4(p, 1.);
-  return pt.z - texture2D(shadow_depth, (pt.xy + 1.) * .5).x;
-}
-
-/**
-Get the amount of shadow for a position in space.
-Requires `#define shadows 1`
-*/
-float getShadow(in vec3 p, in float darkening_factor) {
-  return clamp(exp(-darkening_factor * getShadowDepth(p)), 0., 1.);
 }
 
 /**

@@ -1,16 +1,16 @@
 'use strict';
 
-var _       = require("underscore")
-  , plask   = require("plask")
-  , stats   = require("plask-stats")
-  , Embr    = require("embr")
-  , Toy     = require("./Toy")
-  , Arcball = require("./Arcball")
+var _      = require("underscore")
+  , plask  = require("plask")
+  , stats  = require("plask-stats")
+  , Embr   = require("embr")
+  , Toy    = require("./Toy")
+  , Camera = require("./Camera")
 
 
-var glMatrix = require("../public/lib/gl-matrix")
-  , mat4 = glMatrix.mat4
-  , vec3 = glMatrix.vec3
+var glMatrix = require("gl-matrix")
+var mat4 = glMatrix.mat4
+var vec3 = glMatrix.vec3
 
 var default_settings = {
   width:       1280
@@ -39,37 +39,9 @@ exports.create = function (settings) {
       this.projection = mat4.create()
       this.modelview = mat4.create()
       this.modelview_inv = mat4.create()
-      this.mvp = mat4.create()
       this.camera_pos = vec3.create()
 
-      this.arcball = new Arcball()
-
-
-      // Assign event listeners
-
-      toy.on("change:rendering", function(toy, rendering) {
-        if(rendering) self.start()
-        else self.stop()
-      })
-
-      // toy.editor
-      //   .on("change:define_pixel_scale", this.layout, this)
-
-      this.arcball
-        .on("change:rotation", function(arcball, r) {
-          toy.set("rotation", [ r[0], r[1], r[2], r[3] ])
-        })
-        .on("change:distance", function(arcball, d) {
-          toy.set("distance", d)
-        })
-
-
-      // Init Mouse
-
-      this.mouse_pos = vec3.create()
-      this.mouse_pos_prev = vec3.create()
-      this.mouse_world_pos = vec3.create()
-      this.mouse_world_pos_prev = vec3.create()
+      this.camera = new Camera(toy.control)
 
 
       // Start
@@ -78,15 +50,9 @@ exports.create = function (settings) {
         editor.compile()
       })
 
-      this.layout()
-
 
       // Init Stats
       this.stats = new stats.Stats(100, 60).open();
-    }
-
-  , layout: function() {
-      this.aspect = this.width / this.height
     }
 
   , start: function() {
@@ -107,34 +73,17 @@ exports.create = function (settings) {
         , time = (Date.now() - this.start_time) / 1000
         , res = toy.get("fbo_res")
         , point_size = 0.001
-        , clip_near = 0.01
-        , clip_far = 100.0
-        , fov = control.get("fov.x")
         , shader_mix = control.get("shader_mix.x")
 
 
-      // Animate Arcball
+      this.camera.step();
 
-      var velocity = control.get("eye_velocity")
-        , distance = control.get("eye_distance.x")
-      if(velocity)
-        this.arcball.pan(velocity.x, velocity.y)
-      if(distance)
-        this.arcball.distance = distance
+      this.camera.calcModelView(this.modelview)
+      this.camera.calcProjection(this.projection, this.width, this.height)
 
-      this.arcball.getModelView(this.modelview)
-      mat4.perspective(fov, this.aspect, clip_near, clip_far, this.projection)
-      mat4.multiply(this.projection, this.modelview, this.mvp)
-
-      vec3.set([ 0, 0, 0 ], this.camera_pos)
-      mat4.inverse(this.modelview, this.modelview_inv)
-      mat4.multiplyVec3(this.modelview_inv, this.camera_pos)
-
-      vec3.set(this.mouse_pos, this.mouse_pos_prev)
-      vec3.set(this.mouse_world_pos, this.mouse_world_pos_prev)
-
-      // this.mouse_pos[2] = utils.distanceToDepth(this.arcball.getDistance(), clip_near, clip_far)
-      // vec3.unproject(this.mouse_pos, this.modelview, this.projection, [ 0, 0, 1, 1 ], this.mouse_world_pos)
+      vec3.set(this.camera_pos, 0, 0, 0)
+      mat4.invert(this.modelview_inv, this.modelview)
+      vec3.transformMat4(this.camera_pos, this.camera_pos, this.modelview_inv)
 
       gl.viewport(0, 0, res, res)
       gl.disable(gl.DEPTH_TEST)
@@ -175,19 +124,15 @@ exports.create = function (settings) {
             toy.tex_index.bind(2)
 
             editor.program.use({
-              position:           0
-            , position_prev:      1
-            , index:              2
-            , resolution:         res
-            , oneOverRes:         1.0 / res
-            , count:              res * res
-            , mousePos:           self.mouse_world_pos
-            , prevMousePos:       self.mouse_world_pos_prev
-            , screenMousePos:     self.mouse_pos
-            , prevScreenMousePos: self.mouse_pos_prev
-            , cameraPos:          self.camera_pos
-            , time:               time
-            , frame:              self.frame_num
+              position:      0
+            , position_prev: 1
+            , index:         2
+            , resolution:    res
+            , oneOverRes:    1.0 / res
+            , count:         res * res
+            , cameraPos:     self.camera_pos
+            , time:          time
+            , frame:         self.frame_num
             })
 
             toy.vbo_plane

@@ -63,8 +63,6 @@ module.exports = Backbone.Model.extend({
 
   defaults: {
     fbo_res: 1024
-  , fbo_res_shadow: 512
-  , shadow_volume_scale: 10
   , rotation: [ 0, 0, 0, 1 ]
   , distance: 5
   , rendering: false
@@ -131,6 +129,7 @@ module.exports = Backbone.Model.extend({
     var self = this
       , gl = this.get("context")
 
+    gl = Embr.wrapContextWithErrorChecks(gl)
     Embr.setContext(gl)
 
     if (
@@ -143,18 +142,25 @@ module.exports = Backbone.Model.extend({
 
     // Create shader programs
 
-    this.prog_copy  = new Embr.Program(src_copy_vertex, src_copy_fragment)
-      .link()
-    this.prog_final = new Embr.Program(src_final_vertex, src_final_fragment)
-      .link()
-    this.prog_depth = new Embr.Program(src_depth_vertex, src_depth_fragment)
-      .link()
-    this.prog_mix   = new Embr.Program(src_copy_vertex, src_mix_fragment)
-      .link()
+    this.prog_copy  = new Embr.Program({
+      vertex: src_copy_vertex,
+      fragment: src_copy_fragment
+    }).link()
+    this.prog_final = new Embr.Program({
+      vertex: src_final_vertex,
+      fragment: src_final_fragment
+    }).link()
+    this.prog_depth = new Embr.Program({
+      vertex: src_depth_vertex,
+      fragment: src_depth_fragment
+    }).link()
+    this.prog_mix = new Embr.Program({
+      vertex: src_copy_vertex,
+      fragment: src_mix_fragment
+    }).link()
 
 
     var res = this.get("fbo_res")
-    var res_shadow = this.get("fbo_res_shadow")
 
 
     // Generate texture data
@@ -199,18 +205,6 @@ module.exports = Backbone.Model.extend({
       .check()
 
 
-    // Create shadow framebuffer
-
-    this.fbo_shadow_depth = new Embr.Fbo()
-      .attach(new Embr.Texture({
-        width: res_shadow, height: res_shadow,
-        type: gl.FLOAT,
-        data: null
-      }))
-      .attach(new Embr.Rbo({ width: res_shadow, height: res_shadow }))
-      .check()
-
-
     // Create index texture
 
     if(this.tex_index) this.tex_index.cleanup()
@@ -228,16 +222,18 @@ module.exports = Backbone.Model.extend({
     if(this.vbo_plane)     this.vbo_plane.cleanup()
 
     this.vbo_particles = new Embr.Vbo(gl.POINTS)
-      .setAttr("a_texcoord", { size: 2, data: texcoord_data })
-      .setAttr("a_index", { size: 1, data: index_data })
+      .createAttr("a_texcoord", { size: 2, data: texcoord_data })
+      .createAttr("a_index", { size: 1, data: index_data })
       .setProgram(this.prog_final)
 
     this.vbo_plane = new Embr.Vbo(gl.TRIANGLE_STRIP)
-      .setAttr("a_position", {
-        data: [ -1, -1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0 ], size: 3
+      .createAttr("a_position", {
+        data: new Float32Array([ -1, -1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0 ]),
+        size: 3
       })
-      .setAttr("a_texcoord", {
-        data: [ 0, 0, 0, 1, 1, 0, 1, 1 ], size: 2
+      .createAttr("a_texcoord", {
+        data: new Float32Array([ 0, 0, 0, 1, 1, 0, 1, 1 ]),
+        size: 2
       })
   }
 

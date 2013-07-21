@@ -1,3 +1,5 @@
+'use strict';
+
 var Backbone = require("backbone")
   , _        = require("underscore")
   , Embr     = require("embr")
@@ -90,28 +92,19 @@ module.exports = Backbone.Model.extend({
 
 , compile: _.debounce(function() {
     var vs = this.get("src_vertex")
-      , fs = this.get("src_fragment")
-      , vt = this.get("src_vertex_template")
-      , ft = this.get("src_fragment_template")
+    var fs = this.get("src_fragment")
+    var ft = this.get("src_fragment_template")
 
     if(vs && fs) {
-      // HACK: Kill shadows by default.
-      this.set("define_shadows", 0)
+      var defines = extractShaderDefines(fs);
 
-      _.each(extractShaderDefines(fs), function(value, name) {
-        if(_.isNumber(value))
-          value = +value
-        this.set("define_" + name, value)
-      }, this)
-
-      if(vt)
-        vs = _.template(vt, this.attributes)
-      if(ft)
-        fs = _.template(ft, this.attributes)
+      if(ft) fs = _.template(ft, this.attributes)
 
       try {
-        this.program_tmp.compile(vs, fs)
-        this.program_tmp.link()
+        this.program_tmp.compile({
+          vertex: vs,
+          fragment: fs
+        }).link()
       }
       catch(err) {
         var i, row = this.get("src_fragment_row")
@@ -125,6 +118,11 @@ module.exports = Backbone.Model.extend({
 
         return
       }
+
+      _.each(defines, function(value, name) {
+        if(_.isNumber(value)) value = +value
+        this.set("define_" + name, value)
+      }, this)
 
       this.swap()
       this.set("errors", [])
