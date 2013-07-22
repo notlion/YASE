@@ -30,11 +30,10 @@ function Camera(control) {
   this.translationFriction = 0.05
 
   this.locked = false
-  this.orbitCenteringAlpha = 0.001
+  this.orbitCenteringAlpha = 0.002
+  this.orbitDistanceAlpha = 0.1
   this.orbitRotationFriction = 0.05
-
-  this._orbitOrigin = vec3.fromValues(0, 0, 0)
-  this._orbitDistance = 0
+  this.orbitTransitionSpeed = 0.0025
 
   control.on('change:sp.1.button.2', function(control, value) {
     if (value === 1) this.setLockedOrbit(!this.locked)
@@ -44,7 +43,9 @@ function Camera(control) {
 Camera.prototype.setLockedOrbit = function(locked) {
   this.locked = locked
   if (locked) {
-    this._orbitDistance = vec3.len(this.position)
+    this._orbitTransition = 0
+    this._orbitOrigin = vec3.fromValues(0, 0, 0)
+    this._orbitSpeed = vec3.len(this.positionVel)
   }
 }
 
@@ -54,12 +55,19 @@ Camera.prototype.step = (function() {
 
   var kQuatIdentity = quat.create()
 
-  var tViewDir = vec3.create()
+  var tOrbitVel = vec3.create()
+
   var tOriDir = vec3.create()
-  var tTowardOriAxis = vec3.create()
   var tTowardOriRotation = quat.create()
 
   var zNegAxis = vec3.fromValues(0, 0, -1)
+
+  function easeCubicInOut(t) {
+    if (t <= 0) return 0;
+    if (t >= 1) return 1;
+    var t2 = t * t, t3 = t2 * t;
+    return 4 * (t < 0.5 ? t3 : 3 * (t - t2) + t3 - 0.75);
+  }
 
   return function(time, delta) {
     var fovy = this._control.get('fov.x')
@@ -69,10 +77,22 @@ Camera.prototype.step = (function() {
     var pv = this.positionVel
     var rv = this.rotationVel
 
-    // Translation
-    vec3.sub(pv, p, this.prevPosition) // Verlet velocity
-    if (this.locked) {
+    var orbitTransAlpha = easeCubicInOut(this._orbitTransition)
+    var alpha;
 
+    // Setup Translation
+    if (this.locked) {
+      if (orbitTransAlpha < 1) {
+        this._orbitDistance = vec3.len(this.position)
+      }
+      vec3.normalize(tOrbitVel, pv)
+      vec3.scale(tOrbitVel, tOrbitVel, this._orbitSpeed)
+      vec3.add(tOrbitVel, tOrbitVel, p)
+      vec3.normalize(tOrbitVel, tOrbitVel)
+      vec3.scale(tOrbitVel, tOrbitVel, this._orbitDistance)
+      vec3.sub(tOrbitVel, tOrbitVel, p)
+      alpha = orbitTransAlpha * this.orbitDistanceAlpha
+      vec3.lerp(pv, pv, tOrbitVel, alpha)
     }
     else {
       vec3.scale(pv, pv, 1 - this.translationFriction)
@@ -84,16 +104,8 @@ Camera.prototype.step = (function() {
         vec3.add(pv, pv, tTranslation)
       }
     }
-    vec3.copy(this.prevPosition, p)
-    vec3.add(this.position, p, pv)
 
-    // Maintain the same distance as when locked.
-    // if (this.locked) {
-    //   vec3.normalize(p, p)
-    //   vec3.scale(p, p, this._orbitDistance)
-    // }
-
-    // Rotation
+    // Setup Rotation
     if (this.locked) {
       // Slow down
       quat.slerp(rv, rv, kQuatIdentity, this.orbitRotationFriction)
@@ -102,7 +114,8 @@ Camera.prototype.step = (function() {
       vec3.transformQuat(tOriDir, tOriDir, this.rotation)
       vec3.normalize(tOriDir, tOriDir)
       quat.rotationTo(tTowardOriRotation, tOriDir, zNegAxis)
-      quat.slerp(rv, rv, tTowardOriRotation, this.orbitCenteringAlpha)
+      alpha = orbitTransAlpha * this.orbitCenteringAlpha
+      quat.slerp(rv, rv, tTowardOriRotation, alpha)
     }
     else {
       // Slow down
@@ -118,8 +131,23 @@ Camera.prototype.step = (function() {
         quat.mul(rv, tRotation, rv)
       }
     }
+
+    // Modify Position.
+    vec3.copy(this.prevPosition, p)
+    vec3.add(p, p, pv)
+
+    // Calculate velocity for next frame.
+    vec3.sub(pv, p, this.prevPosition)
+
+    // Modify Rotation.
     quat.mul(this.rotation, rv, this.rotation)
     quat.invert(this.inverseRotation, this.rotation)
+
+    // Step the transition.
+    if (this.locked) {
+      this._orbitTransition += this.orbitTransitionSpeed
+      this._orbitTransition = Math.min(1, this._orbitTransition)
+    }
   }
 })()
 
