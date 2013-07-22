@@ -100,27 +100,13 @@ exports.create = function (settings) {
         var fbo = toy.fbo_groups[editor.id]
 
 
-        // Copy previous step
-
-        fbo.prev_write.bind()
-
-          fbo.read.textures[0].bind(0) // Position
-          toy.vbo_plane
-            .setProgram(toy.prog_copy.use({ u_position: 0 }))
-            .draw()
-
-          fbo.read.textures[0].unbind()
-
-        fbo.prev_write.unbind()
-
-
         // Render particle step pass
 
         if(editor.program.linked) {
           fbo.write.bind()
 
-            fbo.read.textures[0].bind(0)      // Position
-            fbo.prev_read.textures[0].bind(1) // Previous position
+            toy.fbo_mix.textures[0].bind(0)      // Position
+            toy.fbo_prev.textures[0].bind(1) // Previous position
             toy.tex_index.bind(2)
 
             editor.program.use({
@@ -139,12 +125,12 @@ exports.create = function (settings) {
               .setProgram(editor.program)
               .draw()
 
-            fbo.read.textures[0].unbind()
-            fbo.prev_read.textures[0].unbind()
+            toy.fbo_mix.textures[0].unbind()
+            toy.fbo_prev.textures[0].unbind()
             toy.tex_index.unbind()
 
           fbo.write.unbind()
-          fbo.swap()
+          // fbo.swap()
         }
 
       })
@@ -152,12 +138,25 @@ exports.create = function (settings) {
       this.frame_num++
 
 
+      // Copy previous step
+
+      toy.fbo_prev.bind()
+
+        toy.fbo_mix.textures[0].bind(0) // Position
+        toy.vbo_plane
+          .setProgram(toy.prog_copy.use({ u_position: 0 }))
+          .draw()
+        toy.fbo_mix.textures[0].unbind()
+
+      toy.fbo_prev.unbind()
+
+
       // Render mix pass
 
       toy.fbo_mix.bind()
 
-        toy.fbo_groups["left"].read.textures[0].bind(0)
-        toy.fbo_groups["right"].read.textures[0].bind(1)
+        toy.fbo_groups["left"].write.textures[0].bind(0)
+        toy.fbo_groups["right"].write.textures[0].bind(1)
 
         toy.vbo_plane
           .setProgram(toy.prog_mix.use({
@@ -167,8 +166,8 @@ exports.create = function (settings) {
           }))
           .draw()
 
-        toy.fbo_groups["left"].read.textures[0].unbind()
-        toy.fbo_groups["right"].read.textures[0].unbind()
+        toy.fbo_groups["left"].write.textures[0].unbind()
+        toy.fbo_groups["right"].write.textures[0].unbind()
 
       toy.fbo_mix.unbind()
 

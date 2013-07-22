@@ -200,6 +200,9 @@ module.exports = Backbone.Model.extend({
       self.fbo_groups[editor.id] = new FboGroup(fbo_fmt_position)
     })
 
+    this.fbo_prev = new Embr.Fbo()
+      .attach(new Embr.Texture(fbo_fmt_position))
+      .check()
     this.fbo_mix = new Embr.Fbo()
       .attach(new Embr.Texture(fbo_fmt_position))
       .check()
