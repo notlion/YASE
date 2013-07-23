@@ -112,14 +112,6 @@ module.exports = Backbone.Model.extend({
       })
     })
 
-    // Event Listeners
-
-    // this.editor
-    //   .on("change:define_sim_res", function (editor, res) {
-    //     if(!isNaN(res) && res > 0)
-    //       self.set("fbo_res", +res)
-    //   })
-
     this.on("change:context change:fbo_res", function () {
       self.initGL()
     })

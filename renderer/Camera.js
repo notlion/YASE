@@ -1,6 +1,7 @@
 'use strict';
 
-var glmatrix = require("gl-matrix")
+var easing = require('./easing')
+var glmatrix = require('gl-matrix')
 var mat4 = glmatrix.mat4;
 var vec3 = glmatrix.vec3;
 var quat = glmatrix.quat;
@@ -62,13 +63,6 @@ Camera.prototype.step = (function() {
 
   var zNegAxis = vec3.fromValues(0, 0, -1)
 
-  function easeCubicInOut(t) {
-    if (t <= 0) return 0;
-    if (t >= 1) return 1;
-    var t2 = t * t, t3 = t2 * t;
-    return 4 * (t < 0.5 ? t3 : 3 * (t - t2) + t3 - 0.75);
-  }
-
   return function(time, delta) {
     var fovy = this._control.get('fov.x')
     if (fovy) this.fovy = fovy;
@@ -77,7 +71,7 @@ Camera.prototype.step = (function() {
     var pv = this.positionVel
     var rv = this.rotationVel
 
-    var orbitTransAlpha = easeCubicInOut(this._orbitTransition)
+    var orbitTransAlpha = easing.cubicInOut(this._orbitTransition)
     var alpha;
 
     // Setup Translation

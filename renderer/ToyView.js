@@ -6,6 +6,7 @@ var _      = require("underscore")
   , Embr   = require("embr")
   , Toy    = require("./Toy")
   , Camera = require("./Camera")
+  , easing = require('./easing')
 
 
 var glMatrix = require("gl-matrix")
@@ -73,7 +74,7 @@ exports.create = function (settings) {
         , time = (Date.now() - this.start_time) / 1000
         , res = toy.get("fbo_res")
         , point_size = 0.001
-        , shader_mix = control.get("shader_mix.x")
+        , shader_mix = easing.cubicInOut(control.get("shader_mix.x") || 0)
 
 
       this.camera.step();
@@ -93,8 +94,8 @@ exports.create = function (settings) {
       toy.editors.each(function (editor) {
 
         // Ignore low-contribution shaders
-        if((editor.id == "left" && shader_mix > 0.99) ||
-           (editor.id == "right" && shader_mix < 0.01))
+        if((editor.id == "left" && shader_mix > 0.999) ||
+           (editor.id == "right" && shader_mix < 0.001))
           return;
 
         var fbo = toy.fbo_groups[editor.id]
