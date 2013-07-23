@@ -103,14 +103,13 @@ define(function (require) {
     },
 
     load: function() {
-      var self = this
       $.ajax({
         url: "/shader/" + this.get("shader_id"),
         type: "get",
         success: function (res) {
-          self.set("src_fragment", res)
-          self.set("saved", true)
-        }
+          this.set("src_fragment", res)
+          this.set("saved", true)
+        }.bind(this)
       })
     },
 

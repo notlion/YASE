@@ -45,8 +45,12 @@ app.get('/', function (req, res) {
   res.render('index', { env: app.settings.env, layout: false })
 })
 
+function makeShaderPath(id) {
+  return path.join(__dirname, 'shaders', id + '.fsh')
+}
+
 app.post('/shader/:id', function (req, res) {
-  var filename = path.join(__dirname, 'shaders', req.params.id + '.fsh')
+  var filename = makeShaderPath(req.params.id)
   if(req.body.src) {
     fs.writeFile(filename, req.body.src, function (err) {
       if(err)
@@ -61,7 +65,9 @@ app.post('/shader/:id', function (req, res) {
 })
 app.get('/shader/:id', function (req, res) {
   var filename = path.join(__dirname, 'shaders', req.params.id + '.fsh')
-  res.sendfile(filename)
+  fs.exists(filename, function(exists) {
+    res.sendfile(exists ? filename : makeShaderPath('default'))
+  })
 })
 
 
